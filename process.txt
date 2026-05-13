@@ -1,0 +1,13 @@
+FinPulse Development Process:
+1. Initialized Vite project with React and TypeScript.
+2. Cleaned up boilerplate code and established a modular directory structure (Common, Data, Modules).
+3. Created a design system in Vanilla CSS using CSS Variables for Glassmorphism and Claymorphism.
+4. Implemented core data types and state management using AppContext and LocalStorage.
+5. Built reusable widgets: GlassCard, ClayButton, InputField, SelectField.
+6. Developed Accounts Module (Vault) with archiving and adding logic.
+7. Developed Transactions Module with a robust table, filtering, and quick-add modal.
+8. Integrated Recharts for the Analytics module (Spending breakdown, Trends).
+9. Implemented Budgets & Alerts system with smart nudges.
+10. Added Savings Goals tracking.
+11. Implemented FinScore and Forecast logic.
+12. Verified mobile responsiveness and polished UI aesthetics.
