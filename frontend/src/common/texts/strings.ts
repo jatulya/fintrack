@@ -16,6 +16,24 @@ export const strings = {
   loginWith: "Log in with",
   loginNoAccount: "Don't have an account?",
   loginSignUp: "Sign up now",
+  loginError: "Unable to sign in. Please check your credentials.",
+  loginSubmitting: "Signing in...",
+
+  // Register
+  registerWelcome: "Create your FinTrack account",
+  registerSubtitle: "Sign up to start tracking your expenses securely.",
+  registerFullNameLabel: "Full name",
+  registerFullNamePlaceholder: "enter your full name",
+  registerPasswordPlaceholder: "create a strong password",
+  registerConfirmPasswordLabel: "Confirm password",
+  registerConfirmPasswordPlaceholder: "re-enter your password",
+  registerPasswordHint: "At least 8 characters with uppercase, lowercase, and a number.",
+  registerButton: "Create account",
+  registerSubmitting: "Creating account...",
+  registerHasAccount: "Already have an account?",
+  registerSignIn: "Sign in",
+  registerError: "Unable to create account. Please try again.",
+  registerPasswordMismatch: "Passwords do not match.",
 
   // Dashboard
   totalNetWorth: "Total Net Worth",
