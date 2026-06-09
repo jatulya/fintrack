@@ -32,7 +32,7 @@ export const LoginView = () => {
     <AuthLayout title={strings.loginWelcome} subtitle={strings.loginSubtitle}>
       {error && <FormAlert message={error} />}
 
-      <form onSubmit={handleLogin} className="auth-form" noValidate>
+      <form onSubmit={handleLogin} className="flex flex-col gap-5" noValidate>
         <InputField
           id="email"
           label={strings.loginEmailLabel}
@@ -62,8 +62,8 @@ export const LoginView = () => {
           onTogglePassword={() => setShowPassword(!showPassword)}
         />
 
-        <div className="auth-form-row">
-          <label>
+        <div className="row-between text-sm">
+          <label className="row-center gap-2 cursor-pointer text-slate-500 select-none">
             <input
               type="checkbox"
               checked={rememberMe}
@@ -80,7 +80,7 @@ export const LoginView = () => {
         </ClayButton>
       </form>
 
-      <p className="auth-footer">
+      <p className="mt-6 text-body-muted text-center">
         {strings.loginNoAccount}{' '}
         <AppLink to="/register">{strings.loginSignUp}</AppLink>
       </p>

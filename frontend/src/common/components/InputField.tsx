@@ -29,20 +29,22 @@ export const InputField = ({
   ...props
 }: InputFieldProps) => {
   return (
-    <div className="input-field">
+    <div className="col-stack">
       {label && (
-        <label htmlFor={id}>{label}</label>
+        <label htmlFor={id} className="text-label">
+          {label}
+        </label>
       )}
-      <div className="input-field__wrapper">
+      <div className="relative flex items-center">
         {Icon && (
-          <Icon size={18} className="input-icon" />
+          <Icon size={18} className="absolute left-3.5 text-slate-400 pointer-events-none" />
         )}
         <input
           id={id}
           className={cn(
             'clay w-full border-none outline-none transition-all focus:ring-2 focus:ring-indigo-400',
-            Icon ? 'input-with-icon' : 'p-3 px-4',
-            showPasswordToggle && 'input-with-icon-toggle',
+            Icon ? 'py-3 pr-4 pl-11' : 'p-3 px-4',
+            showPasswordToggle && 'pr-11',
             error && 'ring-2 ring-rose-400',
             className,
           )}
@@ -51,7 +53,7 @@ export const InputField = ({
         {showPasswordToggle && (
           <button
             type="button"
-            className="input-toggle"
+            className="absolute right-3 p-1 flex items-center text-slate-400 hover:text-indigo-500 border-none bg-transparent cursor-pointer"
             onClick={onTogglePassword}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
@@ -59,7 +61,7 @@ export const InputField = ({
           </button>
         )}
       </div>
-      {error && <span className="input-field__error">{error}</span>}
+      {error && <span className="text-error">{error}</span>}
     </div>
   );
 };
@@ -70,8 +72,8 @@ export const SelectField = ({
   ...props
 }: { label?: string; options: { value: string; label: string }[] } & SelectHTMLAttributes<HTMLSelectElement>) => {
   return (
-    <div className="flex flex-col gap-2 w-full">
-      {label && <label className="text-sm font-medium text-slate-700 ml-1">{label}</label>}
+    <div className="col-stack">
+      {label && <label className="text-label">{label}</label>}
       <select
         className="clay p-3 px-4 border-none outline-none focus:ring-2 focus:ring-indigo-400 transition-all appearance-none bg-white cursor-pointer w-full"
         {...props}

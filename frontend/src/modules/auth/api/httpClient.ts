@@ -1,6 +1,6 @@
 import { tokenStorage } from "./tokenStorage";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
+const API_BASE = import.meta.env.VITE_API_BASE_PATH;
 
 type RequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

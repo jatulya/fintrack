@@ -64,7 +64,7 @@ const Dashboard = () => {
           </div>
           <div className="flex flex-col gap-3">
             {accounts.map(account => (
-              <div key={account.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-white-50 transition-colors cursor-pointer">
+              <div key={account.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/50 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg flex-center`} style={{ backgroundColor: account.color + '20', color: account.color }}>
                     <Wallet size={20} />
@@ -133,7 +133,7 @@ const Dashboard = () => {
 
       <button
         onClick={() => setIsAddModalOpen(true)}
-        className="fab hidden-lg"
+        className="fab lg:hidden"
         style={{ position: 'fixed', bottom: '100px', right: '24px', zIndex: 60 }}
       >
         <Plus size={32} />
@@ -162,7 +162,7 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-1 container pb-24 lg-pb-8">
+      <main className="flex-1 page-container pb-24 lg:pb-8">
         <Routes>
           <Route index element={<Dashboard />} />
           <Route path="accounts" element={<AccountsView />} />
@@ -173,7 +173,7 @@ const DashboardLayout = () => {
         </Routes>
       </main>
 
-      <nav className="bottom-nav hidden-lg">
+      <nav className="bottom-nav lg:hidden">
         <GlassCard className="p-2 px-6 flex justify-between items-center rounded-3xl">
           <NavItem to="/dashboard" icon={LayoutDashboard} label="Home" active={location.pathname === '/dashboard'} />
           <NavItem to="/dashboard/accounts" icon={Wallet} label="Vault" active={location.pathname === '/dashboard/accounts'} />
@@ -187,7 +187,7 @@ const DashboardLayout = () => {
         </GlassCard>
       </nav>
 
-      <nav className="sidebar hidden-md flex flex-col items-center py-8 gap-8">
+      <nav className="sidebar hidden lg:flex flex-col items-center py-8 gap-8">
         <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex-center text-white font-bold text-xl mb-4" title={user?.email ?? 'FinTrack'}>
           {user?.fullName?.charAt(0)?.toUpperCase() ?? 'F'}
         </div>
