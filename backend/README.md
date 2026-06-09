@@ -10,9 +10,11 @@ JWT authentication powered by **Supabase Auth**, following **repository → serv
    `supabase/migrations/001_auth.sql`
 
 3. **Configure environment**
+
    ```bash
    cp .env.example .env
    ```
+
    From Supabase → Settings → API, copy:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY` (public — used for sign-in/refresh on server)
@@ -23,16 +25,6 @@ JWT authentication powered by **Supabase Auth**, following **repository → serv
    npm install
    npm run dev
    ```
-
-## Auth endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/auth/register` | Create account (JSON body) |
-| POST | `/api/auth/login` | Sign in (JSON body) |
-| POST | `/api/auth/refresh` | Refresh session (httpOnly cookie) |
-| POST | `/api/auth/logout` | Sign out (Bearer + clears cookie) |
-| GET | `/api/auth/me` | Current user (Bearer Supabase access token) |
 
 ## How auth works
 

@@ -11,6 +11,8 @@ function requireEnv(key: string): string {
   return value;
 }
 
+const apiBasePath = process.env.API_BASE_PATH;
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '3001', 10),
@@ -23,4 +25,7 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN,
 
   cookieName: process.env.REFRESH_TOKEN_COOKIE_NAME,
+
+  apiBasePath,
+  authCookiePath: `${apiBasePath}/auth`,
 };

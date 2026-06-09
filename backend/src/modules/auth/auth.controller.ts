@@ -9,7 +9,7 @@ const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.isProduction,
   sameSite: 'strict' as const,
-  path: '/api/auth',
+  path: env.authCookiePath,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -34,7 +34,7 @@ function clearRefreshCookie(res: Response): void {
     httpOnly: true,
     secure: env.isProduction,
     sameSite: 'strict',
-    path: '/api/auth',
+    path: env.authCookiePath,
   });
 }
 
