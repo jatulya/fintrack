@@ -29,22 +29,20 @@ export const InputField = ({
   ...props
 }: InputFieldProps) => {
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="input-field">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-slate-700 ml-1">
-          {label}
-        </label>
+        <label htmlFor={id}>{label}</label>
       )}
-      <div className="relative flex items-center">
+      <div className="input-field__wrapper">
         {Icon && (
-          <Icon size={18} className="absolute left-3.5 text-slate-400 pointer-events-none" />
+          <Icon size={18} className="input-icon" />
         )}
         <input
           id={id}
           className={cn(
-            'clay w-full p-3 border-none outline-none transition-all focus:ring-2 focus:ring-indigo-400',
-            Icon ? 'pl-11 pr-4' : 'px-4',
-            showPasswordToggle && 'pr-11',
+            'clay w-full border-none outline-none transition-all focus:ring-2 focus:ring-indigo-400',
+            Icon ? 'input-with-icon' : 'p-3 px-4',
+            showPasswordToggle && 'input-with-icon-toggle',
             error && 'ring-2 ring-rose-400',
             className,
           )}
@@ -53,7 +51,7 @@ export const InputField = ({
         {showPasswordToggle && (
           <button
             type="button"
-            className="absolute right-3 p-1 flex items-center text-slate-400 hover:text-indigo-500 border-none bg-transparent cursor-pointer"
+            className="input-toggle"
             onClick={onTogglePassword}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
@@ -61,7 +59,7 @@ export const InputField = ({
           </button>
         )}
       </div>
-      {error && <span className="text-xs text-rose-500 ml-1">{error}</span>}
+      {error && <span className="input-field__error">{error}</span>}
     </div>
   );
 };

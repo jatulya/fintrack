@@ -43,7 +43,7 @@ export const RegisterView = () => {
     <AuthLayout title={strings.registerWelcome} subtitle={strings.registerSubtitle}>
       {error && <FormAlert message={error} />}
 
-      <form onSubmit={handleRegister} className="flex flex-col gap-5" noValidate>
+      <form onSubmit={handleRegister} className="auth-form" noValidate>
         <InputField
           id="fullName"
           label={strings.registerFullNameLabel}
@@ -100,14 +100,14 @@ export const RegisterView = () => {
           maxLength={128}
         />
 
-        <p className="text-xs text-slate-400 -mt-2">{strings.registerPasswordHint}</p>
+        <p className="auth-form-hint">{strings.registerPasswordHint}</p>
 
-        <ClayButton type="submit" disabled={isSubmitting} className="w-full mt-1">
+        <ClayButton type="submit" disabled={isSubmitting} className="w-full">
           {isSubmitting ? strings.registerSubmitting : strings.registerButton}
         </ClayButton>
       </form>
 
-      <p className="mt-6 text-sm text-slate-500 text-center">
+      <p className="auth-footer">
         {strings.registerHasAccount}{' '}
         <AppLink to="/">{strings.registerSignIn}</AppLink>
       </p>
