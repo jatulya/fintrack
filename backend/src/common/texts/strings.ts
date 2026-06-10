@@ -15,6 +15,12 @@ export const errorMessages = {
     missingRefreshTokenCookieName: 'Missing required environment variable: REFRESH_TOKEN_COOKIE_NAME',
   },
 
+  financial: {
+    accountNotFound: 'Account not found',
+    categoryNotFound: 'Category not found',
+    transactionNotFound: 'Transaction not found',
+  },
+
   auth: {
     invalidCredentials: 'Invalid email or password',
     emailAlreadyExists: 'An account with this email already exists',
