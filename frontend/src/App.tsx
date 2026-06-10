@@ -8,7 +8,8 @@ import {
   PieChart,
   Settings,
   Bell,
-  Plus
+  Plus,
+  LogOut,
 } from 'lucide-react';
 import { GlassCard } from './common/components/GlassCard';
 import { strings } from './common/texts/strings';
@@ -19,8 +20,10 @@ import { TransactionsView } from './modules/transactions/ui/TransactionsView';
 import { AnalyticsView } from './modules/analytics/ui/AnalyticsView';
 import { SavingsView } from './modules/savings/ui/SavingsView';
 import { AccountsView } from './modules/accounts/ui/AccountsView';
-import { LoginView, isAuthenticated } from './modules/auth/ui/LoginView';
-import { ProtectedRoute } from './modules/auth/ui/ProtectedRoute';
+import { LoginView } from './modules/auth/ui/LoginView';
+import { RegisterView } from './modules/auth/ui/SignUpView';
+import { ProtectedRoute, GuestRoute } from './modules/auth/ui/ProtectedRoute';
+import { AuthProvider, useAuth } from './modules/auth/context/AuthContext';
 
 const Dashboard = () => {
   const { accounts, transactions } = useApp();
@@ -61,7 +64,7 @@ const Dashboard = () => {
           </div>
           <div className="flex flex-col gap-3">
             {accounts.map(account => (
-              <div key={account.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-white-50 transition-colors cursor-pointer">
+              <div key={account.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/50 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg flex-center`} style={{ backgroundColor: account.color + '20', color: account.color }}>
                     <Wallet size={20} />
@@ -130,7 +133,7 @@ const Dashboard = () => {
 
       <button
         onClick={() => setIsAddModalOpen(true)}
-        className="fab hidden-lg"
+        className="fab lg:hidden"
         style={{ position: 'fixed', bottom: '100px', right: '24px', zIndex: 60 }}
       >
         <Plus size={32} />
@@ -139,7 +142,7 @@ const Dashboard = () => {
   );
 };
 
-const NavItem = ({ to, icon: Icon, label, active }: { to: string, icon: any, label: string, active: boolean }) => (
+const NavItem = ({ to, icon: Icon, label, active }: { to: string; icon: React.ComponentType<{ size?: number }>; label: string; active: boolean }) => (
   <Link to={to} className={`flex flex-col items-center gap-1 p-2 transition-all ${active ? 'text-indigo-600' : 'text-slate-400'}`} style={{ textDecoration: 'none', transform: active ? 'scale(1.1)' : 'scale(1)' }}>
     <div className={`p-2 rounded-xl ${active ? 'clay bg-white' : ''}`}>
       <Icon size={24} />
@@ -148,82 +151,94 @@ const NavItem = ({ to, icon: Icon, label, active }: { to: string, icon: any, lab
   </Link>
 );
 
-const AppContent = () => {
+const DashboardLayout = () => {
   const location = useLocation();
+  const { logout, user } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const isLoginPage = location.pathname === '/';
 
-  if (isLoginPage) {
-    return (
-      <Routes>
-        <Route
-          path="/"
-          element={isAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginView />}
-        />
-      </Routes>
-    );
-  }
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
-    <ProtectedRoute>
-      <div className="flex flex-col min-h-screen">
-        <main className="flex-1 container pb-24 lg-pb-8">
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/accounts" element={<AccountsView />} />
-            <Route path="/dashboard/transactions" element={<TransactionsView />} />
-            <Route path="/dashboard/savings" element={<SavingsView />} />
-            <Route path="/dashboard/analytics" element={<AnalyticsView />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </main>
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1 page-container pb-24 lg:pb-8">
+        <Routes>
+          <Route index element={<Dashboard />} />
+          <Route path="accounts" element={<AccountsView />} />
+          <Route path="transactions" element={<TransactionsView />} />
+          <Route path="savings" element={<SavingsView />} />
+          <Route path="analytics" element={<AnalyticsView />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </main>
 
-        {/* Bottom Navigation for Mobile */}
-        <nav className="bottom-nav hidden-lg">
-          <GlassCard className="p-2 px-6 flex justify-between items-center rounded-3xl">
-            <NavItem to="/dashboard" icon={LayoutDashboard} label="Home" active={location.pathname === '/dashboard'} />
-            <NavItem to="/dashboard/accounts" icon={Wallet} label="Vault" active={location.pathname === '/dashboard/accounts'} />
-            <div className="mb-8">
-              <div className="fab" onClick={() => setIsAddModalOpen(true)}>
-                <Plus size={32} />
-              </div>
-            </div>
-            <NavItem to="/dashboard/transactions" icon={ArrowLeftRight} label="Logs" active={location.pathname === '/dashboard/transactions'} />
-            <NavItem to="/dashboard/savings" icon={TrendingUp} label="Goals" active={location.pathname === '/dashboard/savings'} />
-          </GlassCard>
-        </nav>
-
-        {/* Sidebar Navigation for Desktop */}
-        <nav className="sidebar hidden-md flex flex-col items-center py-8 gap-8">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex-center text-white font-bold text-xl mb-4">FP</div>
+      <nav className="bottom-nav lg:hidden">
+        <GlassCard className="p-2 px-6 flex justify-between items-center rounded-3xl">
           <NavItem to="/dashboard" icon={LayoutDashboard} label="Home" active={location.pathname === '/dashboard'} />
           <NavItem to="/dashboard/accounts" icon={Wallet} label="Vault" active={location.pathname === '/dashboard/accounts'} />
+          <div className="mb-8">
+            <div className="fab" onClick={() => setIsAddModalOpen(true)}>
+              <Plus size={32} />
+            </div>
+          </div>
           <NavItem to="/dashboard/transactions" icon={ArrowLeftRight} label="Logs" active={location.pathname === '/dashboard/transactions'} />
           <NavItem to="/dashboard/savings" icon={TrendingUp} label="Goals" active={location.pathname === '/dashboard/savings'} />
-          <NavItem to="/dashboard/analytics" icon={PieChart} label="Stats" active={location.pathname === '/dashboard/analytics'} />
-          <div className="mt-auto">
-            <div className="flex flex-col items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex-center shadow-lg cursor-pointer hover-scale" onClick={() => setIsAddModalOpen(true)}>
-                <Plus size={24} />
-              </div>
-            </div>
-            <NavItem to="/dashboard/settings" icon={Settings} label="Prefs" active={location.pathname === '/dashboard/settings'} />
-          </div>
-        </nav>
+        </GlassCard>
+      </nav>
 
-        {isAddModalOpen && <AddTransactionModal onClose={() => setIsAddModalOpen(false)} />}
-      </div>
-    </ProtectedRoute>
+      <nav className="sidebar hidden lg:flex flex-col items-center py-8 gap-8">
+        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex-center text-white font-bold text-xl mb-4" title={user?.email ?? 'FinTrack'}>
+          {user?.fullName?.charAt(0)?.toUpperCase() ?? 'F'}
+        </div>
+        <NavItem to="/dashboard" icon={LayoutDashboard} label="Home" active={location.pathname === '/dashboard'} />
+        <NavItem to="/dashboard/accounts" icon={Wallet} label="Vault" active={location.pathname === '/dashboard/accounts'} />
+        <NavItem to="/dashboard/transactions" icon={ArrowLeftRight} label="Logs" active={location.pathname === '/dashboard/transactions'} />
+        <NavItem to="/dashboard/savings" icon={TrendingUp} label="Goals" active={location.pathname === '/dashboard/savings'} />
+        <NavItem to="/dashboard/analytics" icon={PieChart} label="Stats" active={location.pathname === '/dashboard/analytics'} />
+        <div className="mt-auto">
+          <div className="flex flex-col items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex-center shadow-lg cursor-pointer hover-scale" onClick={() => setIsAddModalOpen(true)}>
+              <Plus size={24} />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex flex-col items-center gap-1 p-2 text-slate-400 border-none bg-transparent cursor-pointer"
+            title="Sign out"
+          >
+            <div className="p-2 rounded-xl">
+              <LogOut size={24} />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider">Logout</span>
+          </button>
+        </div>
+      </nav>
+
+      {isAddModalOpen && <AddTransactionModal onClose={() => setIsAddModalOpen(false)} />}
+    </div>
   );
 };
 
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<GuestRoute><LoginView /></GuestRoute>} />
+    <Route path="/register" element={<GuestRoute><RegisterView /></GuestRoute>} />
+    <Route path="/dashboard/*" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>
+);
+
 function App() {
   return (
-    <AppProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
