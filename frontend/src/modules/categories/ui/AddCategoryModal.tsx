@@ -6,33 +6,29 @@ import { InputField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
 import { strings } from '../../../common/texts/strings';
 
-interface AddAccountModalProps {
+interface AddCategoryModalProps {
   onClose: () => void;
 }
 
-export const AddAccountModal: React.FC<AddAccountModalProps> = ({ onClose }) => {
-  const { createAccount } = useApp();
+export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) => {
+  const { createCategory } = useApp();
+  const [label, setLabel] = useState('');
   const [name, setName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [notes, setNotes] = useState('');
+  const [color, setColor] = useState('#6366f1');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
+    if (!label || !name) return;
 
     setIsSubmitting(true);
     setError(null);
     try {
-      await createAccount({
-        name,
-        amount: amount ? parseFloat(amount) : 0,
-        notes,
-      });
+      await createCategory({ label, name, color });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      setError(err instanceof Error ? err.message : 'Failed to create category');
     } finally {
       setIsSubmitting(false);
     }
@@ -42,7 +38,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ onClose }) => 
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex-center p-4">
       <GlassCard className="w-full max-w-lg p-0 overflow-hidden animate-fade-in" dark>
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
-          <h2 className="text-xl font-bold text-white">{strings.addAccount}</h2>
+          <h2 className="text-xl font-bold text-white">Add Category</h2>
           <button onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
             <X size={24} />
           </button>
@@ -54,30 +50,32 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ onClose }) => 
           )}
 
           <InputField
-            label="Account Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. HDFC Savings"
+            label="Label"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="e.g. Essentials"
             className="bg-white/5 text-white border-white/10"
             required
           />
 
           <InputField
-            label="Initial Amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Food & Dining"
             className="bg-white/5 text-white border-white/10"
+            required
           />
 
-          <InputField
-            label="Notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional notes about this account"
-            className="bg-white/5 text-white border-white/10"
-          />
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-300 ml-1">Color</label>
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-full h-12 bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1"
+            />
+          </div>
 
           <div className="flex gap-4 pt-4">
             <ClayButton type="button" variant="secondary" onClick={onClose} className="flex-1 bg-white/10 text-white">

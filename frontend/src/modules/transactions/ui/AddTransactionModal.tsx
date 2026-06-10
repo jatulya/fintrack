@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, Plus, Minus, ArrowLeftRight } from 'lucide-react';
+import { X, Plus, Minus } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
 import { ClayButton } from '../../../common/components/ClayButton';
 import { InputField, SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
-import { TransactionType } from '../../../data/models/transactions/types/transactionTypes';
+import type { TransactionDirection } from '../../../data/models/transactions/types/transactionTypes';
 import { strings } from '../../../common/texts/strings';
 
 interface AddTransactionModalProps {
@@ -12,32 +12,43 @@ interface AddTransactionModalProps {
 }
 
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose }) => {
-  const { accounts, transactions, setTransactions } = useApp();
-  const [type, setType] = useState<TransactionType>(TransactionType.Expense);
+  const { accounts, categories, createTransaction } = useApp();
+  const [direction, setDirection] = useState<TransactionDirection>('spent');
   const [amount, setAmount] = useState('');
   const [accountId, setAccountId] = useState(accounts[0]?.id || '');
-  const [category, setCategory] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [categoryId, setCategoryId] = useState(categories[0]?.id || '');
+  const [notes, setNotes] = useState('');
+  const [spentAt, setSpentAt] = useState(new Date().toISOString().split('T')[0]);
+  const [affectsBalance, setAffectsBalance] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !accountId || !category) return;
+    if (!amount || !accountId || !categoryId) return;
 
-    const newTransaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      accountId,
-      amount: parseFloat(amount),
-      type,
-      category,
-      date,
-      description,
-      isRecurring: false,
-    };
-
-    setTransactions([newTransaction, ...transactions]);
-    onClose();
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await createTransaction({
+        accountId,
+        categoryId,
+        amount: parseFloat(amount),
+        spentAt,
+        notes,
+        direction,
+        affectsBalance,
+      });
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create transaction');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const noAccounts = accounts.length === 0;
+  const noCategories = categories.length === 0;
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex-center p-4">
@@ -50,27 +61,34 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {error && (
+            <p className="text-rose-400 text-sm m-0">{error}</p>
+          )}
+
+          {(noAccounts || noCategories) && (
+            <p className="text-amber-300 text-sm m-0">
+              {noAccounts && noCategories
+                ? 'Create an account and a category first.'
+                : noAccounts
+                  ? 'Create an account first.'
+                  : 'Create a category first.'}
+            </p>
+          )}
+
           <div className="flex gap-2 p-1 clay bg-white/10 rounded-2xl">
             <button
               type="button"
-              onClick={() => setType(TransactionType.Expense)}
-              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${type === TransactionType.Expense ? 'bg-rose-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
+              onClick={() => setDirection('spent')}
+              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${direction === 'spent' ? 'bg-rose-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
             >
               <Minus size={18} /> {strings.expense}
             </button>
             <button
               type="button"
-              onClick={() => setType(TransactionType.Income)}
-              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${type === TransactionType.Income ? 'bg-emerald-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
+              onClick={() => setDirection('received')}
+              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${direction === 'received' ? 'bg-emerald-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
             >
               <Plus size={18} /> {strings.income}
-            </button>
-            <button
-              type="button"
-              onClick={() => setType(TransactionType.Transfer)}
-              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${type === TransactionType.Transfer ? 'bg-blue-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
-            >
-              <ArrowLeftRight size={18} /> {strings.transfer}
             </button>
           </div>
 
@@ -86,6 +104,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
                   placeholder="0.00"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-10 text-3xl font-bold text-white outline-none focus:border-indigo-400 transition-all"
                   required
+                  disabled={noAccounts || noCategories}
                 />
               </div>
             </div>
@@ -94,43 +113,59 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
               label="Account"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              options={accounts.map(a => ({ value: a.id, label: a.name }))}
+              options={accounts.map((a) => ({ value: a.id, label: a.name }))}
               className="bg-white/5 text-white border-white/10"
             />
 
-            <InputField
+            <SelectField
               label="Category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Dining"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              options={categories.map((c) => ({ value: c.id, label: c.name }))}
               className="bg-white/5 text-white border-white/10"
-              required
             />
 
             <InputField
               label="Date"
               type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={spentAt}
+              onChange={(e) => setSpentAt(e.target.value)}
               className="bg-white/5 text-white border-white/10"
               required
             />
 
             <InputField
-              label="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              label="Notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="What was this for?"
               className="bg-white/5 text-white border-white/10"
             />
+
+            <label className="col-span-2 flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={affectsBalance}
+                onChange={(e) => setAffectsBalance(e.target.checked)}
+                className="w-5 h-5 rounded accent-indigo-500"
+              />
+              <span className="text-sm text-indigo-100">
+                Update account balance for this transaction
+              </span>
+            </label>
           </div>
 
           <div className="flex gap-4 pt-4">
             <ClayButton type="button" variant="secondary" onClick={onClose} className="flex-1 bg-white/10 text-white">
               {strings.cancel}
             </ClayButton>
-            <ClayButton type="submit" variant="primary" className="flex-1">
-              {strings.save}
+            <ClayButton
+              type="submit"
+              variant="primary"
+              className="flex-1"
+              disabled={isSubmitting || noAccounts || noCategories}
+            >
+              {isSubmitting ? 'Saving...' : strings.save}
             </ClayButton>
           </div>
         </form>

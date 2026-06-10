@@ -2,29 +2,26 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { GlassCard } from '../../../common/components/GlassCard';
 import { useApp } from '../../../data/api/AppContext';
-import { TransactionType } from '../../../data/models/transactions/types/transactionTypes';
 
 export const AnalyticsView: React.FC = () => {
   const { transactions } = useApp();
 
-  // Process data for category breakdown
   const categoryDataMap = transactions
-    .filter(t => t.type === TransactionType.Expense)
+    .filter((t) => t.direction === 'spent')
     .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      acc[t.categoryName] = (acc[t.categoryName] || 0) + t.amount;
       return acc;
     }, {} as Record<string, number>);
 
   const categoryData = Object.entries(categoryDataMap).map(([name, value]) => ({ name, value }));
 
-  // Process data for income vs expense (monthly)
   const monthlyDataMap = transactions.reduce((acc, t) => {
-    const month = t.date.substring(0, 7); // YYYY-MM
+    const month = t.spentAt.substring(0, 7);
     if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
-    if (t.type === TransactionType.Income) acc[month].income += t.amount;
-    if (t.type === TransactionType.Expense) acc[month].expense += t.amount;
+    if (t.direction === 'received') acc[month].income += t.amount;
+    if (t.direction === 'spent') acc[month].expense += t.amount;
     return acc;
-  }, {} as Record<string, { month: string, income: number, expense: number }>);
+  }, {} as Record<string, { month: string; income: number; expense: number }>);
 
   const monthlyData = Object.values(monthlyDataMap).sort((a, b) => a.month.localeCompare(b.month));
 
