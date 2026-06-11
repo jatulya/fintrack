@@ -1,27 +1,26 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowUpDown, Download, Edit2, Trash2, Calendar, Tag, Wallet } from 'lucide-react';
+import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
 import { SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
-import { TransactionType } from '../../../data/models/transactions/types/transactionTypes';
 import { strings } from '../../../common/texts/strings';
 
 export const TransactionsView: React.FC = () => {
-  const { transactions, accounts, setTransactions } = useApp();
+  const { transactions, accounts, deleteTransaction, isLoading } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string>('All');
+  const [directionFilter, setDirectionFilter] = useState<string>('All');
   const [accountFilter, setAccountFilter] = useState<string>('All');
-  const [sortBy, setSortBy] = useState<string>('date');
+  const [sortBy, setSortBy] = useState<string>('spentAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const filteredTransactions = useMemo(() => {
     return transactions
-      .filter(t => {
-        const matchesSearch = t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          t.category?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = typeFilter === 'All' || t.type === typeFilter;
+      .filter((t) => {
+        const matchesSearch = t.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          t.categoryName?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesDirection = directionFilter === 'All' || t.direction === directionFilter;
         const matchesAccount = accountFilter === 'All' || t.accountId === accountFilter;
-        return matchesSearch && matchesType && matchesAccount;
+        return matchesSearch && matchesDirection && matchesAccount;
       })
       .sort((a, b) => {
         const valA = a[sortBy as keyof typeof a];
@@ -30,7 +29,7 @@ export const TransactionsView: React.FC = () => {
         if (valA! > valB!) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
-  }, [transactions, searchTerm, typeFilter, accountFilter, sortBy, sortOrder]);
+  }, [transactions, searchTerm, directionFilter, accountFilter, sortBy, sortOrder]);
 
   const toggleSort = (field: string) => {
     if (sortBy === field) {
@@ -41,9 +40,12 @@ export const TransactionsView: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
-      setTransactions(transactions.filter(t => t.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+    try {
+      await deleteTransaction(id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete transaction');
     }
   };
 
@@ -75,13 +77,12 @@ export const TransactionsView: React.FC = () => {
           </div>
 
           <SelectField
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            value={directionFilter}
+            onChange={(e) => setDirectionFilter(e.target.value)}
             options={[
               { value: 'All', label: 'All Types' },
-              { value: TransactionType.Income, label: 'Income' },
-              { value: TransactionType.Expense, label: 'Expense' },
-              { value: TransactionType.Transfer, label: 'Transfer' },
+              { value: 'received', label: 'Received' },
+              { value: 'spent', label: 'Spent' },
             ]}
           />
 
@@ -90,12 +91,12 @@ export const TransactionsView: React.FC = () => {
             onChange={(e) => setAccountFilter(e.target.value)}
             options={[
               { value: 'All', label: 'All Accounts' },
-              ...accounts.map(a => ({ value: a.id, label: a.name }))
+              ...accounts.map((a) => ({ value: a.id, label: a.name })),
             ]}
           />
 
           <div className="flex gap-2">
-            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-indigo-50" onClick={() => toggleSort('date')}>
+            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-indigo-50" onClick={() => toggleSort('spentAt')}>
               <Calendar size={18} className="mr-2 text-indigo-500" />
               <span className="text-xs font-bold uppercase">Date</span>
               <ArrowUpDown size={14} className="ml-1 text-slate-400" />
@@ -114,7 +115,7 @@ export const TransactionsView: React.FC = () => {
             <thead className="bg-slate-50/50">
               <tr>
                 <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Date</th>
-                <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Description</th>
+                <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Notes</th>
                 <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Category</th>
                 <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Account</th>
                 <th className="p-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Amount</th>
@@ -122,17 +123,23 @@ export const TransactionsView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredTransactions.map(t => {
-                const account = accounts.find(a => a.id === t.accountId);
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="p-12 text-center text-slate-400">
+                    Loading transactions...
+                  </td>
+                </tr>
+              ) : filteredTransactions.map((t) => {
+                const account = accounts.find((a) => a.id === t.accountId);
                 return (
                   <tr key={t.id} className="hover:bg-indigo-50/30 transition-colors">
-                    <td className="p-4 text-sm text-slate-600">{new Date(t.date).toLocaleDateString()}</td>
+                    <td className="p-4 text-sm text-slate-600">{new Date(t.spentAt).toLocaleDateString()}</td>
                     <td className="p-4">
-                      <p className="text-sm font-semibold text-slate-800 m-0">{t.description || 'No description'}</p>
+                      <p className="text-sm font-semibold text-slate-800 m-0">{t.notes || 'No notes'}</p>
                     </td>
                     <td className="p-4">
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-medium">
-                        <Tag size={12} /> {t.category}
+                        <Tag size={12} /> {t.categoryName}
                       </span>
                     </td>
                     <td className="p-4">
@@ -140,23 +147,18 @@ export const TransactionsView: React.FC = () => {
                         <Wallet size={14} /> {account?.name || 'Unknown'}
                       </span>
                     </td>
-                    <td className={`p-4 text-right font-bold ${t.type === TransactionType.Income ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {t.type === TransactionType.Income ? '+' : '-'}₹{t.amount.toLocaleString()}
+                    <td className={`p-4 text-right font-bold ${t.direction === 'received' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {t.direction === 'received' ? '+' : '-'}₹{t.amount.toLocaleString()}
                     </td>
                     <td className="p-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-indigo-500 transition-colors">
-                          <Edit2 size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-rose-500 transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                      <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-rose-500 transition-colors">
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 );
               })}
-              {filteredTransactions.length === 0 && (
+              {!isLoading && filteredTransactions.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-12 text-center text-slate-400">
                     No transactions found matching your filters.

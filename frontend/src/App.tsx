@@ -10,13 +10,14 @@ import {
   Bell,
   Plus,
   LogOut,
+  Tag,
 } from 'lucide-react';
 import { GlassCard } from './common/components/GlassCard';
 import { strings } from './common/texts/strings';
 import { AppProvider, useApp } from './data/api/AppContext';
 import { AddTransactionModal } from './modules/transactions/ui/AddTransactionModal';
-import { TransactionType } from './data/models/transactions/types/transactionTypes';
 import { TransactionsView } from './modules/transactions/ui/TransactionsView';
+import { CategoriesView } from './modules/categories/ui/CategoriesView';
 import { AnalyticsView } from './modules/analytics/ui/AnalyticsView';
 import { SavingsView } from './modules/savings/ui/SavingsView';
 import { AccountsView } from './modules/accounts/ui/AccountsView';
@@ -29,7 +30,7 @@ const Dashboard = () => {
   const { accounts, transactions } = useApp();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const totalNetWorth = accounts.reduce((acc, curr) => acc + (curr.isArchived ? 0 : curr.balance), 0);
+  const totalNetWorth = accounts.reduce((acc, curr) => acc + curr.amount, 0);
   const recentTransactions = transactions.slice(0, 5);
 
   return (
@@ -66,15 +67,15 @@ const Dashboard = () => {
             {accounts.map(account => (
               <div key={account.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-white/50 transition-colors cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex-center`} style={{ backgroundColor: account.color + '20', color: account.color }}>
+                  <div className="w-10 h-10 rounded-lg flex-center bg-indigo-50 text-indigo-600">
                     <Wallet size={20} />
                   </div>
                   <div>
                     <p className="font-medium m-0">{account.name}</p>
-                    <p className="text-xs text-slate-500 m-0">{account.type}</p>
+                    {account.notes && <p className="text-xs text-slate-500 m-0">{account.notes}</p>}
                   </div>
                 </div>
-                <p className="font-semibold m-0">₹{account.balance.toLocaleString()}</p>
+                <p className="font-semibold m-0">₹{account.amount.toLocaleString()}</p>
               </div>
             ))}
           </div>
@@ -91,16 +92,16 @@ const Dashboard = () => {
             {recentTransactions.length > 0 ? recentTransactions.map(t => (
               <div key={t.id} className="flex justify-between items-center p-4 clay">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex-center ${t.type === TransactionType.Income ? 'bg-emerald-100 text-emerald-600' : t.type === TransactionType.Expense ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'}`}>
-                    {t.type === TransactionType.Income ? <TrendingUp size={24} /> : t.type === TransactionType.Expense ? <PieChart size={24} /> : <ArrowLeftRight size={24} />}
+                  <div className={`w-12 h-12 rounded-xl flex-center ${t.direction === 'received' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                    {t.direction === 'received' ? <TrendingUp size={24} /> : <PieChart size={24} />}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800 m-0">{t.description || t.category}</p>
-                    <p className="text-xs text-slate-500 m-0">{t.category} • {new Date(t.date).toLocaleDateString()}</p>
+                    <p className="font-semibold text-slate-800 m-0">{t.notes || t.categoryName}</p>
+                    <p className="text-xs text-slate-500 m-0">{t.categoryName} • {new Date(t.spentAt).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <p className={`font-bold m-0 ${t.type === TransactionType.Income ? 'text-emerald-600' : t.type === TransactionType.Expense ? 'text-rose-600' : 'text-blue-600'}`}>
-                  {t.type === TransactionType.Income ? '+' : t.type === TransactionType.Expense ? '-' : ''}₹{t.amount.toLocaleString()}
+                <p className={`font-bold m-0 ${t.direction === 'received' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {t.direction === 'received' ? '+' : '-'}₹{t.amount.toLocaleString()}
                 </p>
               </div>
             )) : (
@@ -166,6 +167,7 @@ const DashboardLayout = () => {
         <Routes>
           <Route index element={<Dashboard />} />
           <Route path="accounts" element={<AccountsView />} />
+          <Route path="categories" element={<CategoriesView />} />
           <Route path="transactions" element={<TransactionsView />} />
           <Route path="savings" element={<SavingsView />} />
           <Route path="analytics" element={<AnalyticsView />} />
@@ -193,6 +195,7 @@ const DashboardLayout = () => {
         </div>
         <NavItem to="/dashboard" icon={LayoutDashboard} label="Home" active={location.pathname === '/dashboard'} />
         <NavItem to="/dashboard/accounts" icon={Wallet} label="Vault" active={location.pathname === '/dashboard/accounts'} />
+        <NavItem to="/dashboard/categories" icon={Tag} label="Tags" active={location.pathname === '/dashboard/categories'} />
         <NavItem to="/dashboard/transactions" icon={ArrowLeftRight} label="Logs" active={location.pathname === '/dashboard/transactions'} />
         <NavItem to="/dashboard/savings" icon={TrendingUp} label="Goals" active={location.pathname === '/dashboard/savings'} />
         <NavItem to="/dashboard/analytics" icon={PieChart} label="Stats" active={location.pathname === '/dashboard/analytics'} />
