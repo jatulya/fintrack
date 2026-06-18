@@ -4,12 +4,30 @@ import { ErrorCode } from '../../common/texts/errorCodes.js';
 import { errorMessages } from '../../common/texts/strings.js';
 import { transactionImportService } from './transaction-import.service.js';
 import { transactionsService } from './transactions.service.js';
+import { TRANSACTIONS_PAGE_SIZE } from './transactions.validation.js';
+import type { ListTransactionsQuery, TransactionSortField } from './transactions.types.js';
+
+function parseListQuery(req: Request): ListTransactionsQuery {
+  const limit = Math.min(Number(req.query.limit) || TRANSACTIONS_PAGE_SIZE, TRANSACTIONS_PAGE_SIZE);
+  const offset = Number(req.query.offset) || 0;
+  const sortBy = (req.query.sortBy as TransactionSortField | undefined) ?? 'spentAt';
+
+  return {
+    limit,
+    offset,
+    direction: req.query.direction as ListTransactionsQuery['direction'],
+    accountId: req.query.accountId as string | undefined,
+    search: req.query.search as string | undefined,
+    sortBy,
+    sortOrder: (req.query.sortOrder as 'asc' | 'desc' | undefined) ?? 'desc',
+  };
+}
 
 export class TransactionsController {
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const transactions = await transactionsService.list(req.user!.sub);
-      res.json({ success: true, data: { transactions } });
+      const result = await transactionsService.list(req.user!.sub, parseListQuery(req));
+      res.json({ success: true, data: result });
     } catch (err) {
       next(err);
     }

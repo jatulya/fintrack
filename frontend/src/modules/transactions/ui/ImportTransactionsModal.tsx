@@ -10,11 +10,12 @@ import { strings } from '../../../common/texts/strings';
 
 interface ImportTransactionsModalProps {
   onClose: () => void;
+  onImportComplete?: () => void;
 }
 
 const POLL_INTERVAL_MS = 1500;
 
-export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = ({ onClose }) => {
+export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = ({ onClose, onImportComplete }) => {
   const { refreshFinancials } = useApp();
   const [format, setFormat] = useState<ImportFormat | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -57,6 +58,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
 
         if (nextJob.status === 'completed') {
           await refreshFinancials();
+          onImportComplete?.();
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to check import status');
@@ -64,7 +66,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
     }, POLL_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [job, refreshFinancials]);
+  }, [job, refreshFinancials, onImportComplete]);
 
   const handleDownloadTemplate = async () => {
     setIsDownloading(true);

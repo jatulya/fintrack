@@ -16,6 +16,7 @@ import { transactionsApi } from './transactionsApi';
 import type { Account, CreateAccountInput } from '../models/accounts/types/accountTypes';
 import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
 import type { CreateTransactionInput, Transaction } from '../models/transactions/types/transactionTypes';
+import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
 import { SavingsGoal, Investment } from '../models/goals/types/goalTypes';
 import { BudgetLimit } from '../models/budgets/types/budgetTypes';
 
@@ -23,6 +24,7 @@ interface AppContextType {
   categories: Category[];
   accounts: Account[];
   transactions: Transaction[];
+  transactionsRevision: number;
   isLoading: boolean;
   error: string | null;
   refreshFinancials: () => Promise<void>;
@@ -45,6 +47,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [categories, setCategories] = useState<Category[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactionsRevision, setTransactionsRevision] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,7 +62,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const [categoriesResult, accountsResult, transactionsResult] = await Promise.all([
         categoriesApi.list(),
         accountsApi.list(),
-        transactionsApi.list(),
+        transactionsApi.list({ limit: TRANSACTIONS_PAGE_SIZE, offset: 0 }),
       ]);
 
       setCategories(unwrapApiResult(categoriesResult).categories);
@@ -81,6 +84,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCategories([]);
       setAccounts([]);
       setTransactions([]);
+      setTransactionsRevision(0);
       setError(null);
     }
   }, [isAuthenticated, authLoading, refreshFinancials]);
@@ -103,6 +107,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const result = await transactionsApi.create(input);
     const transaction = unwrapApiResult(result).transaction;
     setTransactions((prev) => [transaction, ...prev]);
+    setTransactionsRevision((prev) => prev + 1);
 
     const affectsBalance = input.affectsBalance ?? true;
     if (affectsBalance) {
@@ -142,6 +147,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     categories,
     accounts,
     transactions,
+    transactionsRevision,
     isLoading,
     error,
     refreshFinancials,
@@ -159,6 +165,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     categories,
     accounts,
     transactions,
+    transactionsRevision,
     isLoading,
     error,
     refreshFinancials,

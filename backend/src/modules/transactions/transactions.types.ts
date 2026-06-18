@@ -45,3 +45,20 @@ export interface CreateTransactionInput {
   direction: TransactionDirection;
   affectsBalance?: boolean;
 }
+
+export type TransactionSortField = 'spentAt' | 'amount';
+
+export interface ListTransactionsQuery {
+  limit: number;
+  offset: number;
+  direction?: TransactionDirection;
+  accountId?: string;
+  search?: string;
+  sortBy: TransactionSortField;
+  sortOrder: 'asc' | 'desc';
+}
+
+export interface PaginatedTransactions {
+  transactions: PublicTransaction[];
+  hasMore: boolean;
+}
