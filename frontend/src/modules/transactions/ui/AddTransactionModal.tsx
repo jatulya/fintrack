@@ -121,7 +121,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
               label="Category"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              options={categories.map((c) => ({ value: c.id, label: c.name }))}
+              options={categories.map((c) => ({ value: c.id, label: c.label }))}
               className="bg-white/5 text-white border-white/10"
             />
 

@@ -88,7 +88,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const createCategory = useCallback(async (input: CreateCategoryInput): Promise<Category> => {
     const result = await categoriesApi.create(input);
     const category = unwrapApiResult(result).category;
-    setCategories((prev) => [...prev, category].sort((a, b) => a.name.localeCompare(b.name)));
+    setCategories((prev) => [...prev, category].sort((a, b) => a.label.localeCompare(b.label)));
     return category;
   }, []);
 

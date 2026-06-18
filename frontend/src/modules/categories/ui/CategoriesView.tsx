@@ -41,10 +41,8 @@ export const CategoriesView: React.FC = () => {
                   <Tag size={22} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 m-0 mb-1">
-                    {category.label}
-                  </p>
-                  <h3 className="text-xl font-bold text-slate-800 m-0">{category.name}</h3>
+                  <h3 className="text-xl font-bold text-slate-800 m-0 capitalize">{category.label}</h3>
+                  <p className="text-sm text-slate-500 mt-1 mb-0">{category.name}</p>
                 </div>
               </div>
             </GlassCard>

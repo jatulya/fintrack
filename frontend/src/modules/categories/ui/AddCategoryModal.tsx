@@ -53,16 +53,16 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
             label="Label"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="e.g. Essentials"
+            placeholder="e.g. dining, salary, entertainment"
             className="bg-white/5 text-white border-white/10"
             required
           />
 
           <InputField
-            label="Name"
+            label="Description"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Food & Dining"
+            placeholder="e.g. Food from outside, Monthly salary"
             className="bg-white/5 text-white border-white/10"
             required
           />

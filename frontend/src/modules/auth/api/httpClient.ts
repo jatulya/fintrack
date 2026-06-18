@@ -78,3 +78,79 @@ export async function httpClient<T>(
 
   return data;
 }
+
+export async function uploadClient<T>(
+  path: string,
+  formData: FormData,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+
+  const authToken = tokenStorage.get();
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  const url = `${API_BASE}${path}`;
+
+  let response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: formData,
+    credentials: "include",
+  });
+
+  if (response.status === 401 && onUnauthorized) {
+    const newToken = await onUnauthorized();
+    if (newToken) {
+      headers["Authorization"] = `Bearer ${newToken}`;
+      response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: formData,
+        credentials: "include",
+      });
+    }
+  }
+
+  const data = await parseJson<
+    T & { success?: boolean; error?: { message: string } }
+  >(response);
+
+  if (!response.ok) {
+    const message =
+      data.error?.message ?? `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+export async function downloadFile(path: string, filename: string): Promise<void> {
+  const headers: Record<string, string> = {};
+  const authToken = tokenStorage.get();
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers,
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const data = await parseJson<{ error?: { message: string } }>(response);
+    throw new Error(data.error?.message ?? `Download failed (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
+}
