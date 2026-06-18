@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet } from 'lucide-react';
+import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet, Upload } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
 import { SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
 import { strings } from '../../../common/texts/strings';
+import { ImportTransactionsModal } from './ImportTransactionsModal';
 
 export const TransactionsView: React.FC = () => {
   const { transactions, accounts, deleteTransaction, isLoading } = useApp();
+  const [showImportModal, setShowImportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [directionFilter, setDirectionFilter] = useState<string>('All');
   const [accountFilter, setAccountFilter] = useState<string>('All');
@@ -17,7 +19,7 @@ export const TransactionsView: React.FC = () => {
     return transactions
       .filter((t) => {
         const matchesSearch = t.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          t.categoryName?.toLowerCase().includes(searchTerm.toLowerCase());
+          t.categoryLabel?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesDirection = directionFilter === 'All' || t.direction === directionFilter;
         const matchesAccount = accountFilter === 'All' || t.accountId === accountFilter;
         return matchesSearch && matchesDirection && matchesAccount;
@@ -54,6 +56,13 @@ export const TransactionsView: React.FC = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Transaction Logs</h1>
         <div className="flex gap-2">
+          <GlassCard
+            className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale"
+            onClick={() => setShowImportModal(true)}
+          >
+            <Upload size={20} className="text-indigo-600" />
+            <span className="text-sm font-medium">Import Excel</span>
+          </GlassCard>
           <GlassCard className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale" onClick={() => { }}>
             <Download size={20} className="text-indigo-600" />
             <span className="text-sm font-medium">Export CSV</span>
@@ -139,7 +148,7 @@ export const TransactionsView: React.FC = () => {
                     </td>
                     <td className="p-4">
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-medium">
-                        <Tag size={12} /> {t.categoryName}
+                        <Tag size={12} /> {t.categoryLabel}
                       </span>
                     </td>
                     <td className="p-4">
@@ -169,6 +178,8 @@ export const TransactionsView: React.FC = () => {
           </table>
         </div>
       </GlassCard>
+
+      {showImportModal && <ImportTransactionsModal onClose={() => setShowImportModal(false)} />}
     </div>
   );
 };

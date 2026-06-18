@@ -10,7 +10,7 @@ export class CategoriesRepository {
       .select('*')
       .eq('user_id', userId)
       .is('deleted_at', null)
-      .order('name', { ascending: true });
+      .order('label', { ascending: true });
 
     if (error) throw error;
     return (data ?? []) as CategoryRow[];

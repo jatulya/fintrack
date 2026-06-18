@@ -26,7 +26,6 @@ export interface PublicTransaction {
   id: string;
   accountId: string;
   categoryId: string;
-  categoryName: string;
   categoryLabel: string;
   amount: number;
   spentAt: string;
