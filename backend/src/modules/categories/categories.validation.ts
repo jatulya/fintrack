@@ -9,7 +9,7 @@ export const createCategoryValidation = [
   body('name')
     .trim()
     .isLength({ min: 1, max: 100 })
-    .withMessage('Name must be between 1 and 100 characters')
+    .withMessage('Description must be between 1 and 100 characters')
     .escape(),
   body('icon')
     .optional()

@@ -67,3 +67,7 @@ export const createTransactionValidation = [
 export const transactionIdParam = [
   param('id').isUUID().withMessage('A valid transaction ID is required'),
 ];
+
+export const importJobIdParam = [
+  param('jobId').isUUID().withMessage('A valid import job ID is required'),
+];

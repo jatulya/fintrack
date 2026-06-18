@@ -9,7 +9,7 @@ export const AnalyticsView: React.FC = () => {
   const categoryDataMap = transactions
     .filter((t) => t.direction === 'spent')
     .reduce((acc, t) => {
-      acc[t.categoryName] = (acc[t.categoryName] || 0) + t.amount;
+      acc[t.categoryLabel] = (acc[t.categoryLabel] || 0) + t.amount;
       return acc;
     }, {} as Record<string, number>);
 

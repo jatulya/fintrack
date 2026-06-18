@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet, Loader2 } from 'lucide-react';
+import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet, Loader2, Upload } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
 import { SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
@@ -14,9 +14,11 @@ import { unwrapApiResult } from '../../../modules/auth/types/authTypes';
 import type { Transaction, TransactionSortField } from '../../../data/models/transactions/types/transactionTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../../../data/models/transactions/types/transactionTypes';
 import { strings } from '../../../common/texts/strings';
+import { ImportTransactionsModal } from './ImportTransactionsModal';
 
 export const TransactionsView: React.FC = () => {
   const { accounts, deleteTransaction, transactionsRevision } = useApp();
+  const [showImportModal, setShowImportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [directionFilter, setDirectionFilter] = useState<string>('All');
@@ -137,6 +139,13 @@ export const TransactionsView: React.FC = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Transaction Logs</h1>
         <div className="flex gap-2">
+          <GlassCard
+            className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale"
+            onClick={() => setShowImportModal(true)}
+          >
+            <Upload size={20} className="text-indigo-600" />
+            <span className="text-sm font-medium">Import Excel</span>
+          </GlassCard>
           <GlassCard className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale" onClick={() => { }}>
             <Download size={20} className="text-indigo-600" />
             <span className="text-sm font-medium">Export CSV</span>
@@ -227,7 +236,7 @@ export const TransactionsView: React.FC = () => {
                         </td>
                         <td className="p-4">
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-medium">
-                            <Tag size={12} /> {t.categoryName}
+                            <Tag size={12} /> {t.categoryLabel}
                           </span>
                         </td>
                         <td className="p-4">
@@ -300,6 +309,13 @@ export const TransactionsView: React.FC = () => {
           </table>
         </div>
       </GlassCard>
+
+      {showImportModal && (
+        <ImportTransactionsModal
+          onClose={() => setShowImportModal(false)}
+          onImportComplete={() => void fetchPage(true)}
+        />
+      )}
     </div>
   );
 };

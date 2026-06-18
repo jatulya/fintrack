@@ -96,8 +96,8 @@ const Dashboard = () => {
                     {t.direction === 'received' ? <TrendingUp size={24} /> : <PieChart size={24} />}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800 m-0">{t.notes || t.categoryName}</p>
-                    <p className="text-xs text-slate-500 m-0">{t.categoryName} • {new Date(t.spentAt).toLocaleDateString()}</p>
+                    <p className="font-semibold text-slate-800 m-0">{t.notes || t.categoryLabel}</p>
+                    <p className="text-xs text-slate-500 m-0">{t.categoryLabel} • {new Date(t.spentAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <p className={`font-bold m-0 ${t.direction === 'received' ? 'text-emerald-600' : 'text-rose-600'}`}>
