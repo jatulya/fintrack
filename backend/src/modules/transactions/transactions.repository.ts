@@ -1,19 +1,54 @@
 import { supabaseAdmin } from '../../config/supabase.js';
-import type { CreateTransactionInput, TransactionRow, TransactionWithCategory } from './transactions.types.js';
+import type {
+  CreateTransactionInput,
+  ListTransactionsQuery,
+  TransactionRow,
+  TransactionWithCategory,
+} from './transactions.types.js';
 
 const TABLE = 'transactions';
 
 export class TransactionsRepository {
-  async findAllByUser(userId: string): Promise<TransactionWithCategory[]> {
-    const { data, error } = await supabaseAdmin
+  async findPaginatedByUser(
+    userId: string,
+    query: ListTransactionsQuery,
+  ): Promise<{ rows: TransactionWithCategory[]; hasMore: boolean }> {
+    const sortColumn = query.sortBy === 'amount' ? 'amount' : 'spent_at';
+    const ascending = query.sortOrder === 'asc';
+
+    let request = supabaseAdmin
       .from(TABLE)
       .select('*, categories(name, label)')
       .eq('user_id', userId)
-      .is('deleted_at', null)
-      .order('spent_at', { ascending: false });
+      .is('deleted_at', null);
+
+    if (query.direction) {
+      request = request.eq('direction', query.direction);
+    }
+
+    if (query.accountId) {
+      request = request.eq('account_id', query.accountId);
+    }
+
+    if (query.search) {
+      const term = `%${query.search}%`;
+      request = request.or(`notes.ilike.${term},categories.name.ilike.${term}`);
+    }
+
+    const { data, error } = await request
+      .order(sortColumn, { ascending })
+      .order('id', { ascending })
+      .range(query.offset, query.offset + query.limit);
 
     if (error) throw error;
-    return (data ?? []) as TransactionWithCategory[];
+
+    const rows = (data ?? []) as TransactionWithCategory[];
+    const hasMore = rows.length > query.limit;
+
+    return {
+      rows: hasMore ? rows.slice(0, query.limit) : rows,
+      hasMore,
+    };
   }
 
   async create(userId: string, input: CreateTransactionInput): Promise<TransactionRow> {

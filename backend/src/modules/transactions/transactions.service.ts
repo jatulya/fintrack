@@ -3,6 +3,8 @@ import { categoriesRepository } from '../categories/categories.repository.js';
 import { transactionsRepository } from './transactions.repository.js';
 import type {
   CreateTransactionInput,
+  ListTransactionsQuery,
+  PaginatedTransactions,
   PublicTransaction,
   TransactionWithCategory,
 } from './transactions.types.js';
@@ -37,9 +39,12 @@ export class TransactionsService {
     private readonly accounts = accountsService,
   ) {}
 
-  async list(userId: string): Promise<PublicTransaction[]> {
-    const rows = await this.repo.findAllByUser(userId);
-    return rows.map(toPublicTransaction);
+  async list(userId: string, query: ListTransactionsQuery): Promise<PaginatedTransactions> {
+    const { rows, hasMore } = await this.repo.findPaginatedByUser(userId, query);
+    return {
+      transactions: rows.map(toPublicTransaction),
+      hasMore,
+    };
   }
 
   async create(userId: string, input: CreateTransactionInput): Promise<PublicTransaction> {
