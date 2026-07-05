@@ -11,6 +11,7 @@ export const strings = {
   navThemes: 'Themes',
   navFinancialStory: 'Financial Story',
   navCustomize: 'Customize',
+  sidebarQuickAdd: 'Sprinkle In',
 
   // Login
   loginWelcome: 'Welcome to Rose Wallet',

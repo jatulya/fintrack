@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wallet, Plus, ArrowLeftRight, TrendingUp, Tag, PieChart, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Wallet, Plus, ArrowLeftRight, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { GlassCard } from '../../common/components';
@@ -11,10 +11,11 @@ import { SavingsView } from '../savings/ui/SavingsView';
 import { AddTransactionModal } from '../transactions/ui/AddTransactionModal';
 import { TransactionsView } from '../transactions/ui/TransactionsView';
 import Dashboard from './Dashboard';
+import { Sidebar } from './Sidebar';
 
 const DashboardLayout = () => {
   const location = useLocation();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -23,6 +24,8 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Sidebar onQuickAdd={() => setIsAddModalOpen(true)} onLogout={handleLogout} />
+
       <main className="flex-1 page-container pb-24 lg:pb-8">
         <Routes>
           <Route index element={<Dashboard />} />
@@ -47,40 +50,6 @@ const DashboardLayout = () => {
           <NavItem to="/dashboard/transactions" icon={ArrowLeftRight} label={strings.navMoneyDiary} active={location.pathname === '/dashboard/transactions'} />
           <NavItem to="/dashboard/savings" icon={TrendingUp} label={strings.navPiggyBank} active={location.pathname === '/dashboard/savings'} />
         </GlassCard>
-      </nav>
-
-      <nav className="sidebar hidden lg:flex flex-col items-center py-8 gap-8">
-        <div
-          className="w-12 h-12 rounded-2xl flex-center text-white font-bold text-xl mb-4 bg-accent"
-          title={user?.email ?? strings.appTitle}
-        >
-          {user?.fullName?.charAt(0)?.toUpperCase() ?? 'R'}
-        </div>
-        <NavItem to="/dashboard" icon={LayoutDashboard} label={strings.navCozyCorner} active={location.pathname === '/dashboard'} />
-        <NavItem to="/dashboard/accounts" icon={Wallet} label={strings.navStashes} active={location.pathname === '/dashboard/accounts'} />
-        <NavItem to="/dashboard/categories" icon={Tag} label={strings.navThemes} active={location.pathname === '/dashboard/categories'} />
-        <NavItem to="/dashboard/transactions" icon={ArrowLeftRight} label={strings.navMoneyDiary} active={location.pathname === '/dashboard/transactions'} />
-        <NavItem to="/dashboard/savings" icon={TrendingUp} label={strings.navPiggyBank} active={location.pathname === '/dashboard/savings'} />
-        <NavItem to="/dashboard/analytics" icon={PieChart} label={strings.navFinancialStory} active={location.pathname === '/dashboard/analytics'} />
-        <div className="mt-auto">
-          <div className="flex flex-col items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-accent text-white flex-center shadow-lg cursor-pointer hover-scale" onClick={() => setIsAddModalOpen(true)}>
-              <Plus size={24} />
-            </div>
-          </div>
-          <NavItem to="/dashboard" icon={Settings} label={strings.navCustomize} active={false} />
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex flex-col items-center gap-1 p-2 nav-inactive border-none bg-transparent cursor-pointer"
-            title="Sign out"
-          >
-            <div className="p-2 rounded-xl">
-              <LogOut size={24} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider">Logout</span>
-          </button>
-        </div>
       </nav>
 
       {isAddModalOpen && <AddTransactionModal onClose={() => setIsAddModalOpen(false)} />}

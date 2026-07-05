@@ -25,6 +25,30 @@
   --glass-border: rgba(228, 103, 172, 0.25);
   --glass-shadow: 0 8px 32px 0 rgba(228, 103, 172, 0.12);
 
+  --glass-blur: 16px;
+  --glass-blur-strong: 24px;
+  --glass-highlight: color-mix(in srgb, var(--primary) 40%, transparent);
+
+  --glass-bg-dark: color-mix(in srgb, var(--error) 72%, transparent);
+  --glass-border-dark: color-mix(in srgb, var(--accent) 30%, transparent);
+  --glass-shadow-dark: inset 0 1px 0 color-mix(in srgb, var(--primary) 12%, transparent);
+
+  --glass-bg-accent: color-mix(in srgb, var(--accent) 42%, transparent);
+  --glass-bg-accent-hover: color-mix(in srgb, var(--accent) 52%, transparent);
+  --glass-bg-accent-active: color-mix(in srgb, var(--accent) 36%, transparent);
+  --glass-border-accent: color-mix(in srgb, var(--accent) 55%, transparent);
+  --glass-border-accent-hover: color-mix(in srgb, var(--accent) 65%, transparent);
+  --glass-shadow-accent: inset 0 1px 0 var(--glass-highlight);
+
+  --glass-bg-active: color-mix(in srgb, var(--accent) 38%, transparent);
+  --glass-border-active: color-mix(in srgb, var(--accent) 52%, transparent);
+  --glass-shadow-active: inset 0 1px 0 var(--glass-highlight);
+
+  --glass-text-muted: color-mix(in srgb, var(--secondary) 75%, white);
+  --glass-text-muted-hover: color-mix(in srgb, var(--secondary) 90%, white);
+  --glass-text-ghost: color-mix(in srgb, var(--secondary) 65%, white);
+  --glass-text-ghost-hover: color-mix(in srgb, var(--secondary) 85%, white);
+
   --clay-bg: #ffffff;
   --clay-shadow: inset 4px 4px 8px #f7d6e0, inset -4px -4px 8px #ffffff, 8px 8px 16px rgba(228, 103, 172, 0.15);
 }
@@ -57,7 +81,7 @@
   }
 
   .page-container {
-    @apply max-w-[1200px] mx-auto p-6;
+    @apply max-w-[1200px] mx-auto p-6 lg:ml-64;
   }
 
   .grid-auto-fit {
@@ -136,23 +160,117 @@
     @apply transition-transform hover:scale-105;
   }
 
-  .glass {
+  /* ── Glass foundation (reusable across cards, buttons, nav items) ── */
+
+  .glass-surface {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply border transition-all duration-200;
+  }
+
+  .glass-card {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply border rounded-3xl transition-all duration-200;
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    @apply rounded-3xl;
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .glass-card-dark {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply border rounded-3xl transition-all duration-200;
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+    box-shadow: var(--glass-shadow-dark);
+  }
+
+  .glass {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply border rounded-3xl transition-all duration-200;
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
   }
 
   .glass-dark {
-    background: color-mix(in srgb, var(--error) 88%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-    box-shadow: 0 8px 32px 0 rgba(31, 3, 34, 0.35);
-    @apply rounded-3xl;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply border rounded-3xl transition-all duration-200;
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+    box-shadow: var(--glass-shadow-dark);
   }
+
+  .glass-btn {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply border inline-flex items-center justify-center gap-2 rounded-2xl font-semibold text-sm cursor-pointer transition-all duration-200;
+  }
+
+  .glass-btn-accent {
+    @apply py-3.5 px-4;
+    background: var(--glass-bg-accent);
+    border-color: var(--glass-border-accent);
+    box-shadow: var(--glass-shadow-accent);
+    color: var(--primary);
+  }
+
+  .glass-btn-accent:hover {
+    background: var(--glass-bg-accent-hover);
+    border-color: var(--glass-border-accent-hover);
+  }
+
+  .glass-btn-accent:active {
+    @apply scale-[0.98];
+    background: var(--glass-bg-accent-active);
+  }
+
+  .glass-btn-ghost {
+    @apply px-4 py-2.5 rounded-xl font-medium;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--glass-text-ghost);
+  }
+
+  .glass-btn-ghost:hover {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--glass-text-ghost-hover);
+  }
+
+  .glass-nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl no-underline font-medium text-sm transition-all duration-200;
+  }
+
+  .glass-nav-item-active {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    background: var(--glass-bg-active);
+    border: 1px solid var(--glass-border-active);
+    box-shadow: var(--glass-shadow-active);
+    color: var(--primary);
+  }
+
+  .glass-nav-item-inactive {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--glass-text-muted);
+  }
+
+  .glass-nav-item-inactive:hover {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--glass-text-muted-hover);
+  }
+
+  /* ── Clay (unchanged) ── */
 
   .clay {
     background: var(--clay-bg);
@@ -177,9 +295,37 @@
   }
 
   .sidebar {
-    background-color: color-mix(in srgb, var(--secondary) 70%, white);
-    @apply fixed left-0 top-0 bottom-0 w-24 backdrop-blur-md border-r z-50;
-    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+    background: color-mix(in srgb, var(--bg-dark) 70%, transparent);
+    backdrop-filter: blur(var(--glass-blur-strong));
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+    @apply fixed left-0 top-0 bottom-0 w-64 border-r z-50 px-5 py-8;
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+    box-shadow: inset -1px 0 0 color-mix(in srgb, var(--primary) 8%, transparent);
+  }
+
+  .sidebar-header {
+    @apply flex items-center gap-3 mb-10 px-1;
+  }
+
+  .sidebar-logo {
+    @apply w-10 h-10 shrink-0;
+  }
+
+  .sidebar-title {
+    @apply text-xl font-bold leading-tight;
+    color: var(--accent);
+  }
+
+  .sidebar-nav-list {
+    @apply flex flex-col gap-1.5 flex-1;
+  }
+
+  .sidebar-nav-label {
+    @apply truncate;
+  }
+
+  .sidebar-footer {
+    @apply flex flex-col gap-3 mt-auto pt-6;
   }
 
   .bottom-nav {
