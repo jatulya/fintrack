@@ -136,8 +136,7 @@ export const TransactionsView: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{strings.navMoneyDiary}</h1>
+      <div className="flex justify-end items-center mb-8">
         <div className="flex gap-2">
           <GlassCard
             className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale"

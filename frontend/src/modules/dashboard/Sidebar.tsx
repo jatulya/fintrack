@@ -24,8 +24,8 @@ export const Sidebar = ({ onQuickAdd, onLogout }: SidebarProps) => {
   const { pathname } = useLocation();
 
   return (
-    <nav className="sidebar hidden lg:flex flex-col">
-      <div className="sidebar-header">
+    <nav className="sidebar">
+      <div className="sidebar-header clay-surface rounded-2xl px-3 py-2">
         <img src="/assets/logo.svg" alt="" className="sidebar-logo" aria-hidden="true" />
         <span className="sidebar-title">{strings.appTitle}</span>
       </div>

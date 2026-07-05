@@ -4,6 +4,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { GlassCard } from '../../common/components';
 import { useAuth } from '../auth';
 import { AddTransactionModal } from '../transactions/ui/AddTransactionModal';
+import { DashboardPageHeader } from './DashboardPageHeader';
 import { Sidebar } from './Sidebar';
 import { bottomNavItems } from './sidebarNavItems';
 
@@ -21,38 +22,41 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="app-shell">
       <Sidebar onQuickAdd={() => setIsAddModalOpen(true)} onLogout={handleLogout} />
 
-      <main className="flex-1 page-container pb-24 lg:pb-8">
-        {children}
-      </main>
+      <div className="app-main">
+        <main className="page-container pb-24 lg:pb-8">
+          <DashboardPageHeader />
+          <div className="page-content">{children}</div>
+        </main>
 
-      <nav className="bottom-nav lg:hidden">
-        <GlassCard className="p-2 px-6 flex justify-between items-center rounded-3xl">
-          {bottomNavItems.slice(0, 2).map((item) => (
-            <NavItem
-              key={item.to}
-              item={item}
-              active={location.pathname === item.to}
-            />
-          ))}
-          <div className="mb-8">
-            <div className="fab" onClick={() => setIsAddModalOpen(true)}>
-              <Plus size={32} />
+        <nav className="bottom-nav lg:hidden">
+          <GlassCard className="p-2 px-6 flex justify-between items-center rounded-3xl">
+            {bottomNavItems.slice(0, 2).map((item) => (
+              <NavItem
+                key={item.to}
+                item={item}
+                active={location.pathname === item.to}
+              />
+            ))}
+            <div className="mb-8">
+              <div className="fab" onClick={() => setIsAddModalOpen(true)}>
+                <Plus size={32} />
+              </div>
             </div>
-          </div>
-          {bottomNavItems.slice(2).map((item) => (
-            <NavItem
-              key={item.to}
-              item={item}
-              active={location.pathname === item.to}
-            />
-          ))}
-        </GlassCard>
-      </nav>
+            {bottomNavItems.slice(2).map((item) => (
+              <NavItem
+                key={item.to}
+                item={item}
+                active={location.pathname === item.to}
+              />
+            ))}
+          </GlassCard>
+        </nav>
 
-      {isAddModalOpen && <AddTransactionModal onClose={() => setIsAddModalOpen(false)} />}
+        {isAddModalOpen && <AddTransactionModal onClose={() => setIsAddModalOpen(false)} />}
+      </div>
     </div>
   );
 };

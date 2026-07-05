@@ -3,6 +3,7 @@ export { ClayButton } from './ClayButton';
 export { FormAlert } from './FormAlert';
 export { InputField } from './InputField';
 export { GlassCard } from './GlassCard';
+export { StashCard } from './StashCard';
 
 
 
