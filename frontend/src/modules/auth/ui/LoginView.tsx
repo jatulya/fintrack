@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Lock } from 'lucide-react';
 import { strings } from '../../../common/texts/strings';
+import { paths } from '../../../common/routes/paths';
 import { AppLink, ClayButton, FormAlert, InputField } from '../../../common/components';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from './AuthLayout';
@@ -68,11 +69,12 @@ export const LoginView = () => {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 rounded border-indigo-500 text-indigo-500 focus:ring-indigo-500 accent-indigo-500"
+              className="h-4 w-4 rounded accent-accent"
+              style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
             />
             {strings.loginRememberMe}
           </label>
-          <span className="text-indigo-500 font-medium">{strings.loginForgotPassword}</span>
+          <span className="text-accent font-medium">{strings.loginForgotPassword}</span>
         </div>
 
         <ClayButton type="submit" disabled={isSubmitting} className="w-full">
@@ -82,7 +84,7 @@ export const LoginView = () => {
 
       <p className="mt-6 text-body-muted text-center">
         {strings.loginNoAccount}{' '}
-        <AppLink to="/register">{strings.loginSignUp}</AppLink>
+        <AppLink to={paths.register}>{strings.loginSignUp}</AppLink>
       </p>
     </AuthLayout>
   );

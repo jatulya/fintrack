@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Lock, Mail } from 'lucide-react';
 import { strings } from '../../../common/texts/strings';
+import { paths } from '../../../common/routes/paths';
 import { AppLink, ClayButton, FormAlert, InputField } from '../../../common/components';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from './AuthLayout';
@@ -109,7 +110,7 @@ export const RegisterView = () => {
 
       <p className="mt-6 text-body-muted text-center">
         {strings.registerHasAccount}{' '}
-        <AppLink to="/">{strings.registerSignIn}</AppLink>
+        <AppLink to={paths.login}>{strings.registerSignIn}</AppLink>
       </p>
     </AuthLayout>
   );

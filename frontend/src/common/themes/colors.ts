@@ -1,28 +1,22 @@
 export const colors = {
-  primary: '#6366f1', // Indigo
-  secondary: '#a855f7', // Purple
-  accent: '#f43f5e', // Rose
-  success: '#22c55e', // Green
-  warning: '#f59e0b', // Amber
-  danger: '#ef4444', // Red
-  info: '#3b82f6', // Blue
-  
-  // Backgrounds
-  bgLight: '#f8fafc',
-  bgDark: '#0f172a',
-  
-  // Glassmorphism tokens
-  glassBg: 'rgba(255, 255, 255, 0.4)',
-  glassBorder: 'rgba(255, 255, 255, 0.5)',
-  glassShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
-  
-  // Claymorphism tokens
+  primary: '#EFF7F6',
+  secondary: '#F7D6E0',
+  accent: '#E467AC',
+  error: '#1F0322',
+
+  bgLight: '#EFF7F6',
+  bgDark: '#1F0322',
+
+  glassBg: 'rgba(247, 214, 224, 0.45)',
+  glassBorder: 'rgba(228, 103, 172, 0.25)',
+  glassShadow: '0 8px 32px 0 rgba(228, 103, 172, 0.12)',
+
   clayBg: '#ffffff',
-  clayShadow: 'inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff, 8px 8px 16px rgba(0, 0, 0, 0.1)',
-  
-  // Text
-  textPrimary: '#1e293b',
-  textSecondary: '#64748b',
-  textMuted: '#94a3b8',
+  clayShadow:
+    'inset 4px 4px 8px #f7d6e0, inset -4px -4px 8px #ffffff, 8px 8px 16px rgba(228, 103, 172, 0.15)',
+
+  textPrimary: '#1F0322',
+  textSecondary: '#6b4d72',
+  textMuted: '#9a849e',
   textInverted: '#ffffff',
 };

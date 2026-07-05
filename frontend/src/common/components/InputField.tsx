@@ -42,10 +42,10 @@ export const InputField = ({
         <input
           id={id}
           className={cn(
-            'clay w-full border-none outline-none transition-all focus:ring-2 focus:ring-indigo-400',
+            'clay w-full border-none outline-none transition-all focus:ring-2 focus:ring-accent',
             Icon ? 'py-3 pr-4 pl-11' : 'p-3 px-4',
             showPasswordToggle && 'pr-11',
-            error && 'ring-2 ring-rose-400',
+            error && 'ring-2 ring-error',
             className,
           )}
           {...props}
@@ -53,7 +53,7 @@ export const InputField = ({
         {showPasswordToggle && (
           <button
             type="button"
-            className="absolute right-3 p-1 flex items-center text-slate-400 hover:text-indigo-500 border-none bg-transparent cursor-pointer"
+            className="absolute right-3 p-1 flex items-center text-body-muted hover:text-accent border-none bg-transparent cursor-pointer"
             onClick={onTogglePassword}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
@@ -75,7 +75,7 @@ export const SelectField = ({
     <div className="col-stack">
       {label && <label className="text-label">{label}</label>}
       <select
-        className="clay p-3 px-4 border-none outline-none focus:ring-2 focus:ring-indigo-400 transition-all appearance-none bg-white cursor-pointer w-full"
+        className="clay p-3 px-4 border-none outline-none focus:ring-2 focus:ring-accent transition-all appearance-none bg-white cursor-pointer w-full"
         {...props}
       >
         {options.map((opt) => (

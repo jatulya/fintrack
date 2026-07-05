@@ -10,25 +10,25 @@ interface ClayButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   variant?: 'primary' | 'secondary' | 'danger' | 'success';
 }
 
-export const ClayButton: React.FC<ClayButtonProps> = ({ 
-  children, 
-  className, 
+export const ClayButton: React.FC<ClayButtonProps> = ({
+  children,
+  className,
   variant = 'primary',
-  ...props 
+  ...props
 }) => {
   const variantStyles = {
-    primary: 'bg-indigo-500 text-white',
-    secondary: 'bg-purple-500 text-white',
-    danger: 'bg-rose-500 text-white',
-    success: 'bg-emerald-500 text-white',
+    primary: 'bg-accent text-white',
+    secondary: 'bg-secondary text-error',
+    danger: 'bg-error text-white',
+    success: 'bg-accent text-white',
   };
 
   return (
-    <button 
+    <button
       className={cn(
         'clay-btn font-semibold active:clay-pressed disabled:opacity-50 disabled:cursor-not-allowed',
         variantStyles[variant],
-        className
+        className,
       )}
       {...props}
     >

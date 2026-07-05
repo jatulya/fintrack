@@ -39,14 +39,14 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
       <GlassCard className="w-full max-w-lg p-0 overflow-hidden animate-fade-in" dark>
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
           <h2 className="text-xl font-bold text-white">Add Category</h2>
-          <button onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
+          <button onClick={onClose} className="modal-label hover:text-white transition-colors border-none bg-transparent cursor-pointer">
             <X size={24} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <p className="text-rose-400 text-sm m-0">{error}</p>
+            <p className="modal-error text-sm m-0">{error}</p>
           )}
 
           <InputField

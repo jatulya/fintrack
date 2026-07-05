@@ -106,44 +106,44 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
       <GlassCard className="w-full max-w-4xl p-0 overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto" dark>
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5 sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <FileSpreadsheet size={24} className="text-indigo-300" />
+            <FileSpreadsheet size={24} className="text-accent" />
             <h2 className="text-xl font-bold text-white m-0">Import Transactions</h2>
           </div>
-          <button onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
+          <button onClick={onClose} className="modal-label hover:text-white transition-colors">
             <X size={24} />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          {error && <p className="text-rose-400 text-sm m-0">{error}</p>}
+          {error && <p className="modal-error text-sm m-0">{error}</p>}
 
           <section>
             <h3 className="text-lg font-semibold text-white mb-2">Excel file format</h3>
-            <p className="text-sm text-indigo-200 mb-4">
-              Use the first sheet with these column headers. Account names and category labels must already exist in FinTrack.
+            <p className="text-sm modal-label mb-4">
+              Use the first sheet with these column headers. Stash names and theme labels must already exist in Rose Wallet.
             </p>
 
             {isLoadingFormat ? (
-              <p className="text-indigo-200 text-sm">Loading format...</p>
+              <p className="modal-label text-sm">Loading format...</p>
             ) : format && (
               <>
                 <div className="overflow-x-auto rounded-2xl border border-white/10 mb-4">
                   <table className="w-full border-collapse text-sm">
                     <thead className="bg-white/5">
                       <tr>
-                        <th className="p-3 text-left text-indigo-200">Column</th>
-                        <th className="p-3 text-left text-indigo-200">Required</th>
-                        <th className="p-3 text-left text-indigo-200">Description</th>
-                        <th className="p-3 text-left text-indigo-200">Example</th>
+                        <th className="p-3 text-left modal-label">Column</th>
+                        <th className="p-3 text-left modal-label">Required</th>
+                        <th className="p-3 text-left modal-label">Description</th>
+                        <th className="p-3 text-left modal-label">Example</th>
                       </tr>
                     </thead>
                     <tbody>
                       {format.columns.map((column) => (
                         <tr key={column.name} className="border-t border-white/10">
                           <td className="p-3 text-white font-medium">{column.name}</td>
-                          <td className="p-3 text-indigo-100">{column.required ? 'Yes' : 'No'}</td>
-                          <td className="p-3 text-indigo-100">{column.description}</td>
-                          <td className="p-3 text-indigo-100">{column.example}</td>
+                          <td className="p-3 modal-body">{column.required ? 'Yes' : 'No'}</td>
+                          <td className="p-3 modal-body">{column.description}</td>
+                          <td className="p-3 modal-body">{column.example}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -155,7 +155,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
                     <thead className="bg-white/5">
                       <tr>
                         {format.columns.map((column) => (
-                          <th key={column.name} className="p-3 text-left text-indigo-200 whitespace-nowrap">
+                          <th key={column.name} className="p-3 text-left modal-label whitespace-nowrap">
                             {column.name}
                           </th>
                         ))}
@@ -165,7 +165,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
                       {format.exampleRows.map((row, index) => (
                         <tr key={index} className="border-t border-white/10">
                           {format.columns.map((column) => (
-                            <td key={column.name} className="p-3 text-indigo-100 whitespace-nowrap">
+                            <td key={column.name} className="p-3 modal-body whitespace-nowrap">
                               {row[column.name] ?? ''}
                             </td>
                           ))}
@@ -193,9 +193,9 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
 
           <section className="border-t border-white/10 pt-6">
             <h3 className="text-lg font-semibold text-white mb-4">Upload file</h3>
-            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-white/20 rounded-2xl cursor-pointer hover:border-indigo-400 transition-colors">
-              <Upload size={32} className="text-indigo-300" />
-              <span className="text-indigo-100 text-sm">
+            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-white/20 rounded-2xl cursor-pointer hover:border-accent transition-colors">
+              <Upload size={32} className="text-accent" />
+              <span className="modal-body text-sm">
                 {selectedFile ? selectedFile.name : 'Choose an .xlsx, .xls, or .csv file'}
               </span>
               <input
@@ -209,7 +209,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
 
             {job && (
               <div className="mt-4 space-y-3">
-                <div className="flex justify-between text-sm text-indigo-100">
+                <div className="flex justify-between text-sm modal-body">
                   <span>
                     {job.status === 'completed' ? 'Import complete' : 'Importing transactions...'}
                   </span>
@@ -217,22 +217,22 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
                 </div>
                 <div className="h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500 transition-all"
+                    className="h-full bg-accent transition-all"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
                 <div className="flex gap-4 text-sm">
-                  <span className="text-emerald-300 flex items-center gap-1">
+                  <span className="text-increase flex items-center gap-1">
                     <CheckCircle2 size={16} /> {job.succeededRows} succeeded
                   </span>
-                  <span className="text-rose-300 flex items-center gap-1">
+                  <span className="text-decrease flex items-center gap-1">
                     <AlertCircle size={16} /> {job.failedRows} failed
                   </span>
                 </div>
                 {job.errors.length > 0 && (
                   <div className="max-h-40 overflow-y-auto rounded-xl bg-white/5 p-3 space-y-2">
                     {job.errors.map((item) => (
-                      <p key={`${item.row}-${item.message}`} className="text-rose-300 text-sm m-0">
+                      <p key={`${item.row}-${item.message}`} className="text-decrease text-sm m-0">
                         Row {item.row}: {item.message}
                       </p>
                     ))}
