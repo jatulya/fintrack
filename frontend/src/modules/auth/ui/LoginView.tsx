@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Lock } from 'lucide-react';
 import { strings } from '../../../common/texts/strings';
+import { paths } from '../../../common/routes/paths';
 import { AppLink, ClayButton, FormAlert, InputField } from '../../../common/components';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from './AuthLayout';
@@ -83,7 +84,7 @@ export const LoginView = () => {
 
       <p className="mt-6 text-body-muted text-center">
         {strings.loginNoAccount}{' '}
-        <AppLink to="/register">{strings.loginSignUp}</AppLink>
+        <AppLink to={paths.register}>{strings.loginSignUp}</AppLink>
       </p>
     </AuthLayout>
   );

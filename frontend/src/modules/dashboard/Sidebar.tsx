@@ -1,5 +1,6 @@
 import { LogOut, Plus } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { paths } from '../../common/routes/paths';
 import { strings } from '../../common/texts/strings';
 import { SidebarNavItem } from './SidebarNavItem';
 import { sidebarNavItems } from './sidebarNavItems';
@@ -13,8 +14,8 @@ const isNavActive = (item: (typeof sidebarNavItems)[number], pathname: string) =
   if (item.highlightWhenActive === false) {
     return false;
   }
-  if (item.to === '/dashboard') {
-    return pathname === '/dashboard';
+  if (item.to === paths.dashboard) {
+    return pathname === paths.dashboard;
   }
   return pathname.startsWith(item.to);
 };

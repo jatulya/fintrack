@@ -8,6 +8,7 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
+import { paths } from '../../common/routes/paths';
 import { strings } from '../../common/texts/strings';
 
 export interface SidebarNavItemConfig {
@@ -18,11 +19,18 @@ export interface SidebarNavItemConfig {
 }
 
 export const sidebarNavItems: SidebarNavItemConfig[] = [
-  { to: '/dashboard', label: strings.navCozyCorner, icon: LayoutDashboard },
-  { to: '/dashboard/accounts', label: strings.navStashes, icon: Wallet },
-  { to: '/dashboard/categories', label: strings.navThemes, icon: Tag },
-  { to: '/dashboard/transactions', label: strings.navMoneyDiary, icon: ArrowLeftRight },
-  { to: '/dashboard/savings', label: strings.navPiggyBank, icon: TrendingUp },
-  { to: '/dashboard/analytics', label: strings.navFinancialStory, icon: PieChart },
-  { to: '/dashboard', label: strings.navCustomize, icon: Settings, highlightWhenActive: false },
+  { to: paths.dashboard, label: strings.navCozyCorner, icon: LayoutDashboard },
+  { to: paths.accounts, label: strings.navStashes, icon: Wallet },
+  { to: paths.categories, label: strings.navThemes, icon: Tag },
+  { to: paths.transactions, label: strings.navMoneyDiary, icon: ArrowLeftRight },
+  { to: paths.savings, label: strings.navPiggyBank, icon: TrendingUp },
+  { to: paths.analytics, label: strings.navFinancialStory, icon: PieChart },
+  { to: paths.dashboard, label: strings.navCustomize, icon: Settings, highlightWhenActive: false },
+];
+
+export const bottomNavItems: SidebarNavItemConfig[] = [
+  { to: paths.dashboard, label: strings.navCozyCorner, icon: LayoutDashboard },
+  { to: paths.accounts, label: strings.navStashes, icon: Wallet },
+  { to: paths.transactions, label: strings.navMoneyDiary, icon: ArrowLeftRight },
+  { to: paths.savings, label: strings.navPiggyBank, icon: TrendingUp },
 ];

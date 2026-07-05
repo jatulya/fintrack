@@ -2,6 +2,7 @@ import { Bell, PieChart, Plus, Settings, TrendingUp, Wallet } from 'lucide-react
 import { GlassCard } from '../../common/components';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { paths } from '../../common/routes/paths';
 import { strings } from '../../common/texts/strings';
 import { useApp } from '../../data/api/AppContext';
 import { AddTransactionModal } from '../transactions/ui/AddTransactionModal';
@@ -65,7 +66,7 @@ const Dashboard = () => {
         <GlassCard className="lg:col-span-2">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold text-lg">{strings.recentTransactions}</h3>
-            <Link to="/dashboard/transactions" className="text-sm text-accent font-medium no-underline hover:underline">
+            <Link to={paths.transactions} className="text-sm text-accent font-medium no-underline hover:underline">
               View All
             </Link>
           </div>
