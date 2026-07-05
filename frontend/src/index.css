@@ -295,7 +295,7 @@
   }
 
   .sidebar {
-    background: color-mix(in srgb, var(--bg-dark) 70%, transparent);
+    background: var(--text-primary);
     backdrop-filter: blur(var(--glass-blur-strong));
     -webkit-backdrop-filter: blur(var(--glass-blur-strong));
     @apply fixed left-0 top-0 bottom-0 w-64 border-r z-50 px-5 py-8;
