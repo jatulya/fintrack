@@ -1,6 +1,8 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { GlassCard } from '../../../common/components/GlassCard';
+import { strings } from '../../../common/texts/strings';
+import { colors } from '../../../common/themes/colors';
 import { useApp } from '../../../data/api/AppContext';
 
 export const AnalyticsView: React.FC = () => {
@@ -25,15 +27,15 @@ export const AnalyticsView: React.FC = () => {
 
   const monthlyData = Object.values(monthlyDataMap).sort((a, b) => a.month.localeCompare(b.month));
 
-  const COLORS = ['#6366f1', '#a855f7', '#f43f5e', '#22c55e', '#f59e0b', '#3b82f6'];
+  const CHART_COLORS = [colors.accent, colors.secondary, colors.error, '#c9a0b8', '#f0b8d0', '#d484ad'];
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold mb-8">Financial Analytics</h1>
+      <h1 className="text-3xl font-bold mb-8">{strings.navFinancialStory}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <GlassCard>
-          <h3 className="font-semibold text-lg mb-6">Spending by Category</h3>
+          <h3 className="font-semibold text-lg mb-6">{strings.spendingByCategory}</h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -47,7 +49,7 @@ export const AnalyticsView: React.FC = () => {
                   dataKey="value"
                 >
                   {categoryData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -58,7 +60,7 @@ export const AnalyticsView: React.FC = () => {
         </GlassCard>
 
         <GlassCard>
-          <h3 className="font-semibold text-lg mb-6">Income vs Expense</h3>
+          <h3 className="font-semibold text-lg mb-6">{strings.incomeVsExpense}</h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
@@ -66,8 +68,8 @@ export const AnalyticsView: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="income" fill={colors.accent} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" fill={colors.error} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -75,7 +77,7 @@ export const AnalyticsView: React.FC = () => {
       </div>
 
       <GlassCard className="mb-8">
-        <h3 className="font-semibold text-lg mb-6">Net Savings Trend</h3>
+        <h3 className="font-semibold text-lg mb-6">{strings.savingsTrend}</h3>
         <div style={{ height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={monthlyData}>
@@ -87,7 +89,7 @@ export const AnalyticsView: React.FC = () => {
                 type="monotone"
                 dataKey={(d) => d.income - d.expense}
                 name="Net Savings"
-                stroke="#6366f1"
+                stroke={colors.accent}
                 strokeWidth={3}
                 dot={{ r: 6 }}
                 activeDot={{ r: 8 }}

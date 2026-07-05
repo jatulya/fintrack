@@ -1,28 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #EFF7F6;
+  --color-secondary: #F7D6E0;
+  --color-accent: #E467AC;
+  --color-error: #1F0322;
+}
+
 :root {
-  --primary: #6366f1;
-  --secondary: #a855f7;
-  --accent: #f43f5e;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
+  --primary: #EFF7F6;
+  --secondary: #F7D6E0;
+  --accent: #E467AC;
+  --error: #1F0322;
 
-  --bg-light: #f8fafc;
-  --bg-dark: #0f172a;
+  --bg-light: #EFF7F6;
+  --bg-dark: #1F0322;
 
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
+  --text-primary: #1F0322;
+  --text-secondary: #6b4d72;
+  --text-muted: #9a849e;
 
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  --glass-bg: rgba(247, 214, 224, 0.45);
+  --glass-border: rgba(228, 103, 172, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(228, 103, 172, 0.12);
 
   --clay-bg: #ffffff;
-  --clay-shadow: inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff, 8px 8px 16px rgba(0, 0, 0, 0.1);
+  --clay-shadow: inset 4px 4px 8px #f7d6e0, inset -4px -4px 8px #ffffff, 8px 8px 16px rgba(228, 103, 172, 0.15);
 }
 
 @layer base {
@@ -36,7 +40,6 @@
 }
 
 @layer components {
-  /* Layout composites */
   .flex-center {
     @apply flex items-center justify-center;
   }
@@ -62,41 +65,77 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
 
-  /* Typography composites */
   .text-label {
-    @apply text-sm font-medium text-slate-700 ml-1;
+    @apply text-sm font-medium ml-1;
+    color: var(--text-primary);
   }
 
   .text-body-muted {
-    @apply text-sm text-slate-500;
+    @apply text-sm;
+    color: var(--text-secondary);
   }
 
   .text-heading-page {
     @apply text-3xl font-bold mb-8;
+    color: var(--text-primary);
   }
 
   .text-heading-section {
     @apply font-semibold text-lg;
+    color: var(--text-primary);
   }
 
   .text-error {
-    @apply text-xs text-rose-500 ml-1;
+    @apply text-xs ml-1;
+    color: var(--error);
   }
 
-  /* UI composites */
+  .text-accent {
+    color: var(--accent);
+  }
+
+  .text-decrease {
+    color: var(--error);
+  }
+
+  .text-increase {
+    color: var(--accent);
+  }
+
+  .bg-accent-soft {
+    background-color: color-mix(in srgb, var(--accent) 15%, white);
+    color: var(--accent);
+  }
+
+  .bg-error-soft {
+    background-color: color-mix(in srgb, var(--error) 10%, white);
+    color: var(--error);
+  }
+
+  .bg-secondary-soft {
+    background-color: var(--secondary);
+    color: var(--text-primary);
+  }
+
   .form-alert {
-    @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-5;
+    background-color: color-mix(in srgb, var(--secondary) 80%, white);
+    border: 1px solid var(--accent);
+    color: var(--error);
+    @apply px-4 py-3 rounded-xl text-sm mb-5;
   }
 
   .bg-gradient-primary {
-    @apply bg-gradient-to-br from-indigo-500 to-purple-500;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+  }
+
+  .bg-gradient-auth {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 50%, color-mix(in srgb, var(--accent) 25%, white) 100%);
   }
 
   .hover-scale {
     @apply transition-transform hover:scale-105;
   }
 
-  /* Glassmorphism */
   .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -107,15 +146,14 @@
   }
 
   .glass-dark {
-    background: rgba(15, 23, 42, 0.6);
+    background: color-mix(in srgb, var(--error) 88%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    box-shadow: 0 8px 32px 0 rgba(31, 3, 34, 0.35);
     @apply rounded-3xl;
   }
 
-  /* Claymorphism */
   .clay {
     background: var(--clay-bg);
     box-shadow: var(--clay-shadow);
@@ -123,24 +161,25 @@
   }
 
   .clay-pressed {
-    box-shadow: inset 2px 2px 5px #d1d9e6, inset -2px -2px 5px #ffffff;
+    box-shadow: inset 2px 2px 5px #f7d6e0, inset -2px -2px 5px #ffffff;
     @apply translate-y-0.5;
   }
 
   .clay-btn {
-    background: var(--primary);
-    box-shadow: inset 4px 4px 8px rgba(255, 255, 255, 0.3), inset -4px -4px 8px rgba(0, 0, 0, 0.2);
+    background: var(--accent);
+    box-shadow: inset 4px 4px 8px rgba(255, 255, 255, 0.35), inset -4px -4px 8px rgba(0, 0, 0, 0.15);
     @apply text-white border-none py-3 px-6 rounded-2xl font-semibold cursor-pointer transition-all duration-200 ease-in-out;
   }
 
   .clay-btn:active {
-    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(255, 255, 255, 0.2);
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.25), inset -2px -2px 4px rgba(255, 255, 255, 0.2);
     @apply scale-[0.98];
   }
 
-  /* App shell */
   .sidebar {
-    @apply fixed left-0 top-0 bottom-0 w-24 bg-white/50 backdrop-blur-md border-r border-black/5 z-50;
+    background-color: color-mix(in srgb, var(--secondary) 70%, white);
+    @apply fixed left-0 top-0 bottom-0 w-24 backdrop-blur-md border-r z-50;
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
   }
 
   .bottom-nav {
@@ -148,10 +187,36 @@
   }
 
   .fab {
-    @apply w-14 h-14 rounded-full text-white flex items-center justify-center border-4 border-slate-50;
-    background: var(--primary);
-    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
+    @apply w-14 h-14 rounded-full text-white flex items-center justify-center;
+    background: var(--accent);
+    border: 4px solid var(--primary);
+    box-shadow: 0 8px 16px rgba(228, 103, 172, 0.45);
     transform: translateY(-20px);
+  }
+
+  .nav-active {
+    color: var(--accent);
+  }
+
+  .nav-inactive {
+    color: var(--text-muted);
+  }
+
+  .focus-ring-accent {
+    @apply focus:ring-2;
+    --tw-ring-color: var(--accent);
+  }
+
+  .modal-label {
+    color: color-mix(in srgb, var(--secondary) 90%, white);
+  }
+
+  .modal-body {
+    color: color-mix(in srgb, var(--primary) 90%, white);
+  }
+
+  .modal-error {
+    color: var(--secondary);
   }
 }
 
@@ -179,10 +244,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
+  background: var(--accent);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: color-mix(in srgb, var(--accent) 80%, var(--error));
 }

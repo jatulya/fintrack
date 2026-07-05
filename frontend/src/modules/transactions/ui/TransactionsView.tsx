@@ -137,17 +137,17 @@ export const TransactionsView: React.FC = () => {
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Transaction Logs</h1>
+        <h1 className="text-3xl font-bold">{strings.navMoneyDiary}</h1>
         <div className="flex gap-2">
           <GlassCard
             className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale"
             onClick={() => setShowImportModal(true)}
           >
-            <Upload size={20} className="text-indigo-600" />
+            <Upload size={20} className="text-accent" />
             <span className="text-sm font-medium">Import Excel</span>
           </GlassCard>
           <GlassCard className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale" onClick={() => { }}>
-            <Download size={20} className="text-indigo-600" />
+            <Download size={20} className="text-accent" />
             <span className="text-sm font-medium">Export CSV</span>
           </GlassCard>
         </div>
@@ -163,7 +163,7 @@ export const TransactionsView: React.FC = () => {
                 placeholder={strings.search}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full clay p-3 pl-10 outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+                className="w-full clay p-3 pl-10 outline-none focus:ring-2 focus:ring-accent transition-all"
               />
             </div>
           </div>
@@ -182,18 +182,18 @@ export const TransactionsView: React.FC = () => {
             value={accountFilter}
             onChange={(e) => setAccountFilter(e.target.value)}
             options={[
-              { value: 'All', label: 'All Accounts' },
+              { value: 'All', label: `All ${strings.navStashes}` },
               ...accounts.map((a) => ({ value: a.id, label: a.name })),
             ]}
           />
 
           <div className="flex gap-2">
-            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-indigo-50" onClick={() => toggleSort('spentAt')}>
-              <Calendar size={18} className="mr-2 text-indigo-500" />
+            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-secondary/50" onClick={() => toggleSort('spentAt')}>
+              <Calendar size={18} className="mr-2 text-accent" />
               <span className="text-xs font-bold uppercase">Date</span>
               <ArrowUpDown size={14} className="ml-1 text-slate-400" />
             </GlassCard>
-            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-indigo-50" onClick={() => toggleSort('amount')}>
+            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-secondary/50" onClick={() => toggleSort('amount')}>
               <span className="text-xs font-bold uppercase">Amount</span>
               <ArrowUpDown size={14} className="ml-1 text-slate-400" />
             </GlassCard>
@@ -219,7 +219,7 @@ export const TransactionsView: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="p-12 text-center text-slate-400">
                     <div className="flex flex-col items-center gap-3">
-                      <Loader2 size={24} className="animate-spin text-indigo-500" />
+                      <Loader2 size={24} className="animate-spin text-accent" />
                       <span>Loading transactions...</span>
                     </div>
                   </td>
@@ -229,13 +229,13 @@ export const TransactionsView: React.FC = () => {
                   {transactions.map((t) => {
                     const account = accounts.find((a) => a.id === t.accountId);
                     return (
-                      <tr key={t.id} className="hover:bg-indigo-50/30 transition-colors">
+                      <tr key={t.id} className="hover:bg-secondary/50/30 transition-colors">
                         <td className="p-4 text-sm text-slate-600">{new Date(t.spentAt).toLocaleDateString()}</td>
                         <td className="p-4">
                           <p className="text-sm font-semibold text-slate-800 m-0">{t.notes || 'No notes'}</p>
                         </td>
                         <td className="p-4">
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-medium">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-accent-soft text-xs font-medium">
                             <Tag size={12} /> {t.categoryLabel}
                           </span>
                         </td>
@@ -244,11 +244,11 @@ export const TransactionsView: React.FC = () => {
                             <Wallet size={14} /> {account?.name || 'Unknown'}
                           </span>
                         </td>
-                        <td className={`p-4 text-right font-bold ${t.direction === 'received' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <td className={`p-4 text-right font-bold ${t.direction === 'received' ? 'text-increase' : 'text-decrease'}`}>
                           {t.direction === 'received' ? '+' : '-'}₹{t.amount.toLocaleString()}
                         </td>
                         <td className="p-4 text-center">
-                          <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-rose-500 transition-colors">
+                          <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-decrease transition-colors">
                             <Trash2 size={16} />
                           </button>
                         </td>
@@ -259,11 +259,11 @@ export const TransactionsView: React.FC = () => {
                   {error && (
                     <tr>
                       <td colSpan={6} className="p-8 text-center">
-                        <p className="text-rose-500 mb-3 m-0">{error}</p>
+                        <p className="text-decrease mb-3 m-0">{error}</p>
                         <button
                           type="button"
                           onClick={() => void fetchPage(transactions.length === 0)}
-                          className="text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-transparent border-none cursor-pointer"
+                          className="text-sm font-medium text-accent hover:opacity-80 bg-transparent border-none cursor-pointer"
                         >
                           Try again
                         </button>
@@ -283,7 +283,7 @@ export const TransactionsView: React.FC = () => {
                     <tr>
                       <td colSpan={6} className="p-6 text-center text-slate-400">
                         <div className="flex items-center justify-center gap-2">
-                          <Loader2 size={18} className="animate-spin text-indigo-500" />
+                          <Loader2 size={18} className="animate-spin text-accent" />
                           <span>Loading more transactions...</span>
                         </div>
                       </td>

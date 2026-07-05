@@ -51,27 +51,25 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
   const noCategories = categories.length === 0;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-[100] flex-center p-4" style={{ backgroundColor: 'rgba(31, 3, 34, 0.4)' }}>
       <GlassCard className="w-full max-w-lg p-0 overflow-hidden animate-fade-in" dark>
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
           <h2 className="text-xl font-bold text-white">{strings.addTransaction}</h2>
-          <button onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
+          <button onClick={onClose} className="modal-label hover:text-white transition-colors border-none bg-transparent cursor-pointer">
             <X size={24} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <p className="text-rose-400 text-sm m-0">{error}</p>
-          )}
+          {error && <p className="modal-error text-sm m-0">{error}</p>}
 
           {(noAccounts || noCategories) && (
-            <p className="text-amber-300 text-sm m-0">
+            <p className="modal-body text-sm m-0">
               {noAccounts && noCategories
-                ? 'Create an account and a category first.'
+                ? `Create a stash and a theme first.`
                 : noAccounts
-                  ? 'Create an account first.'
-                  : 'Create a category first.'}
+                  ? `Create a stash first.`
+                  : `Create a theme first.`}
             </p>
           )}
 
@@ -79,14 +77,14 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             <button
               type="button"
               onClick={() => setDirection('spent')}
-              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${direction === 'spent' ? 'bg-rose-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
+              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all border-none cursor-pointer ${direction === 'spent' ? 'bg-error text-white shadow-lg' : 'modal-label hover:bg-white/5'}`}
             >
               <Minus size={18} /> {strings.expense}
             </button>
             <button
               type="button"
               onClick={() => setDirection('received')}
-              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all ${direction === 'received' ? 'bg-emerald-500 text-white shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
+              className={`flex-1 flex-center gap-2 py-3 rounded-xl transition-all border-none cursor-pointer ${direction === 'received' ? 'bg-accent text-white shadow-lg' : 'modal-label hover:bg-white/5'}`}
             >
               <Plus size={18} /> {strings.income}
             </button>
@@ -94,15 +92,15 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-indigo-200 mb-2 block">Amount</label>
+              <label className="text-xs font-bold uppercase tracking-widest modal-label mb-2 block">{strings.amount}</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-indigo-300">₹</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-accent">₹</span>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-10 text-3xl font-bold text-white outline-none focus:border-indigo-400 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-10 text-3xl font-bold text-white outline-none focus:border-accent transition-all"
                   required
                   disabled={noAccounts || noCategories}
                 />
@@ -110,7 +108,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             </div>
 
             <SelectField
-              label="Account"
+              label={strings.navStashes}
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               options={accounts.map((a) => ({ value: a.id, label: a.name }))}
@@ -118,7 +116,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             />
 
             <SelectField
-              label="Category"
+              label={strings.category}
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               options={categories.map((c) => ({ value: c.id, label: c.label }))}
@@ -126,7 +124,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             />
 
             <InputField
-              label="Date"
+              label={strings.date}
               type="date"
               value={spentAt}
               onChange={(e) => setSpentAt(e.target.value)}
@@ -135,7 +133,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             />
 
             <InputField
-              label="Notes"
+              label={strings.description}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What was this for?"
@@ -147,11 +145,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
                 type="checkbox"
                 checked={affectsBalance}
                 onChange={(e) => setAffectsBalance(e.target.checked)}
-                className="w-5 h-5 rounded accent-indigo-500"
+                className="w-5 h-5 rounded accent-accent"
               />
-              <span className="text-sm text-indigo-100">
-                Update account balance for this transaction
-              </span>
+              <span className="text-sm modal-body">Update stash balance for this entry</span>
             </label>
           </div>
 
@@ -159,12 +155,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             <ClayButton type="button" variant="secondary" onClick={onClose} className="flex-1 bg-white/10 text-white">
               {strings.cancel}
             </ClayButton>
-            <ClayButton
-              type="submit"
-              variant="primary"
-              className="flex-1"
-              disabled={isSubmitting || noAccounts || noCategories}
-            >
+            <ClayButton type="submit" variant="primary" className="flex-1" disabled={isSubmitting || noAccounts || noCategories}>
               {isSubmitting ? 'Saving...' : strings.save}
             </ClayButton>
           </div>
