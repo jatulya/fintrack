@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Tag } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
-import { strings } from '../../../common/texts/strings';
 import { colors } from '../../../common/themes/colors';
 import { useApp } from '../../../data/api/AppContext';
 import { AddCategoryModal } from './AddCategoryModal';
@@ -12,9 +11,8 @@ export const CategoriesView: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{strings.navThemes}</h1>
-        <button onClick={() => setShowAddCategory(true)} className="clay-btn flex items-center gap-2">
+      <div className="flex justify-end items-center mb-8">
+        <button onClick={() => setShowAddCategory(true)} className="clay-btn">
           <Plus size={20} /> Add Theme
         </button>
       </div>
@@ -26,9 +24,9 @@ export const CategoriesView: React.FC = () => {
           No themes yet. Create one to start tagging your money diary.
         </GlassCard>
       ) : (
-        <div className="grid-auto-fit">
+        <div className="flex-grid">
           {categories.map((category) => (
-            <GlassCard key={category.id}>
+            <div key={category.id} className="clay-card">
               <div className="flex items-start gap-4">
                 <div
                   className="w-12 h-12 rounded-xl flex-center"
@@ -44,7 +42,7 @@ export const CategoriesView: React.FC = () => {
                   <p className="text-sm text-body-muted mt-1 mb-0">{category.name}</p>
                 </div>
               </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
       )}

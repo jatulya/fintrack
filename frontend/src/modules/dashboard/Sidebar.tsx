@@ -1,4 +1,5 @@
-import { LogOut, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { Fragment } from 'react';
 import { useLocation } from 'react-router-dom';
 import { paths } from '../../common/routes/paths';
 import { strings } from '../../common/texts/strings';
@@ -7,7 +8,6 @@ import { sidebarNavItems } from './sidebarNavItems';
 
 interface SidebarProps {
   onQuickAdd: () => void;
-  onLogout: () => void;
 }
 
 const isNavActive = (item: (typeof sidebarNavItems)[number], pathname: string) => {
@@ -20,36 +20,28 @@ const isNavActive = (item: (typeof sidebarNavItems)[number], pathname: string) =
   return pathname.startsWith(item.to);
 };
 
-export const Sidebar = ({ onQuickAdd, onLogout }: SidebarProps) => {
+export const Sidebar = ({ onQuickAdd }: SidebarProps) => {
   const { pathname } = useLocation();
 
   return (
-    <nav className="sidebar hidden lg:flex flex-col">
-      <div className="sidebar-header">
+    <nav className="sidebar">
+      <div className="sidebar-header clay-surface rounded-2xl px-3 py-2">
         <img src="/assets/logo.svg" alt="" className="sidebar-logo" aria-hidden="true" />
         <span className="sidebar-title">{strings.appTitle}</span>
       </div>
 
       <div className="sidebar-nav-list">
         {sidebarNavItems.map((item) => (
-          <SidebarNavItem
-            key={`${item.to}-${item.label}`}
-            item={item}
-            active={isNavActive(item, pathname)}
-          />
+          <Fragment key={`${item.to}-${item.label}`}>
+            <SidebarNavItem item={item} active={isNavActive(item, pathname)} />
+            {item.label === strings.navCustomize && (
+              <button type="button" className="clay-btn w-full sidebar-quick-add" onClick={onQuickAdd}>
+                <Plus size={20} />
+                <span>{strings.sidebarQuickAdd}</span>
+              </button>
+            )}
+          </Fragment>
         ))}
-      </div>
-
-      <div className="sidebar-footer">
-        <button type="button" className="glass-btn glass-btn-accent w-full" onClick={onQuickAdd}>
-          <Plus size={20} />
-          <span>{strings.sidebarQuickAdd}</span>
-        </button>
-
-        <button type="button" className="glass-btn glass-btn-ghost w-full justify-start" onClick={onLogout} title="Sign out">
-          <LogOut size={18} />
-          <span>Logout</span>
-        </button>
       </div>
     </nav>
   );

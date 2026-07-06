@@ -16,7 +16,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({ children, className, dark,
     <div 
       className={cn(
         dark ? 'glass-card-dark' : 'glass-card',
-        'p-6 transition-all duration-300 hover:scale-[1.02]',
+        'p-6',
         className
       )}
       {...props}

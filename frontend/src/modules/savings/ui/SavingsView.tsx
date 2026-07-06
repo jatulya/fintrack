@@ -9,8 +9,6 @@ export const SavingsView: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold mb-8">{strings.navPiggyBank}</h1>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         <GlassCard className="bg-gradient-primary text-white border-none">
           <div className="flex items-center gap-3 mb-4">

@@ -31,8 +31,6 @@ export const AnalyticsView: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold mb-8">{strings.navFinancialStory}</h1>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <GlassCard>
           <h3 className="font-semibold text-lg mb-6">{strings.spendingByCategory}</h3>

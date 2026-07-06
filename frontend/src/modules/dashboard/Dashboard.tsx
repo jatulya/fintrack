@@ -1,4 +1,4 @@
-import { Bell, PieChart, Plus, Settings, TrendingUp, Wallet } from 'lucide-react';
+import { PieChart, Plus, TrendingUp } from 'lucide-react';
 import { GlassCard } from '../../common/components';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
@@ -6,63 +6,21 @@ import { paths } from '../../common/routes/paths';
 import { strings } from '../../common/texts/strings';
 import { useApp } from '../../data/api/AppContext';
 import { AddTransactionModal } from '../transactions/ui/AddTransactionModal';
+import { DashboardStashesRow } from './DashboardStashesRow';
+import { TotalBalanceBanner } from './TotalBalanceBanner';
 
 const Dashboard = () => {
-  const { accounts, transactions } = useApp();
+  const { transactions } = useApp();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const totalNetWorth = accounts.reduce((acc, curr) => acc + curr.amount, 0);
   const recentTransactions = transactions.slice(0, 5);
 
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{strings.navCozyCorner}</h1>
-        <div className="flex gap-4">
-          <GlassCard className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale">
-            <Bell size={20} style={{ color: 'var(--text-secondary)' }} />
-          </GlassCard>
-          <div className="w-10 h-10 rounded-full clay flex-center cursor-pointer" title={strings.navCustomize}>
-            <Settings size={20} style={{ color: 'var(--text-secondary)' }} />
-          </div>
-        </div>
-      </div>
+      <TotalBalanceBanner />
+      <DashboardStashesRow />
 
-      <div className="grid-auto-fit mb-8">
-        <GlassCard className="bg-gradient-primary text-white border-none shadow-xl">
-          <p className="mb-1 opacity-90">{strings.totalNetWorth}</p>
-          <h2 className="text-4xl font-bold">₹{totalNetWorth.toLocaleString()}</h2>
-          <div className="mt-4 flex items-center gap-2 text-sm opacity-90">
-            <TrendingUp size={16} />
-            <span className="text-increase">+5.2% from last month</span>
-          </div>
-        </GlassCard>
-
-        <GlassCard>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-lg">{strings.navStashes}</h3>
-            <Plus size={20} className="text-accent cursor-pointer" />
-          </div>
-          <div className="flex flex-col gap-3">
-            {accounts.map((account) => (
-              <div key={account.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-secondary/50 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex-center bg-accent-soft">
-                    <Wallet size={20} />
-                  </div>
-                  <div>
-                    <p className="font-medium m-0">{account.name}</p>
-                    {account.notes && <p className="text-xs text-body-muted m-0">{account.notes}</p>}
-                  </div>
-                </div>
-                <p className="font-semibold m-0">₹{account.amount.toLocaleString()}</p>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      </div>
-
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <GlassCard className="lg:col-span-2">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold text-lg">{strings.recentTransactions}</h3>

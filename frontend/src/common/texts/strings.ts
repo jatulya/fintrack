@@ -47,6 +47,8 @@ export const strings = {
   registerPasswordMismatch: 'Passwords do not match.',
 
   // Cozy Corner (Dashboard)
+  totalBalance: 'Total Balance',
+  savingsRateLabel: 'Savings',
   totalNetWorth: 'Total Net Worth',
   accounts: 'Stashes',
   recentTransactions: 'Recent Money Diary Entries',
