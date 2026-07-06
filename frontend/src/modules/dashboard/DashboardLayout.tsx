@@ -2,7 +2,6 @@ import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { GlassCard } from '../../common/components';
-import { useAuth } from '../auth';
 import { AddTransactionModal } from '../transactions/ui/AddTransactionModal';
 import { DashboardPageHeader } from './DashboardPageHeader';
 import { Sidebar } from './Sidebar';
@@ -14,16 +13,11 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
-  const { logout } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  const handleLogout = async () => {
-    await logout();
-  };
 
   return (
     <div className="app-shell">
-      <Sidebar onQuickAdd={() => setIsAddModalOpen(true)} onLogout={handleLogout} />
+      <Sidebar onQuickAdd={() => setIsAddModalOpen(true)} />
 
       <div className="app-main">
         <main className="page-container pb-24 lg:pb-8">

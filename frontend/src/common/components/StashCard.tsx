@@ -45,7 +45,7 @@ export const StashCard = ({ account, index }: StashCardProps) => {
           <p className="stash-card-balance">₹{account.amount.toLocaleString()}</p>
         </div>
 
-        <button type="button" className="clay-surface-icon stash-card-menu" aria-label={`Options for ${account.name}`}>
+        <button type="button" className="glass-icon-btn stash-card-menu" aria-label={`Options for ${account.name}`}>
           <MoreVertical size={16} />
         </button>
       </div>

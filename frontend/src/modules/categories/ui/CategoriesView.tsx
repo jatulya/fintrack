@@ -12,7 +12,7 @@ export const CategoriesView: React.FC = () => {
   return (
     <div className="animate-fade-in">
       <div className="flex justify-end items-center mb-8">
-        <button onClick={() => setShowAddCategory(true)} className="clay-btn flex items-center gap-2">
+        <button onClick={() => setShowAddCategory(true)} className="clay-btn">
           <Plus size={20} /> Add Theme
         </button>
       </div>
@@ -26,7 +26,7 @@ export const CategoriesView: React.FC = () => {
       ) : (
         <div className="flex-grid">
           {categories.map((category) => (
-            <GlassCard key={category.id}>
+            <div key={category.id} className="clay-card">
               <div className="flex items-start gap-4">
                 <div
                   className="w-12 h-12 rounded-xl flex-center"
@@ -42,7 +42,7 @@ export const CategoriesView: React.FC = () => {
                   <p className="text-sm text-body-muted mt-1 mb-0">{category.name}</p>
                 </div>
               </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
       )}

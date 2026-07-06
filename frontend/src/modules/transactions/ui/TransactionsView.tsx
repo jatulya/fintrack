@@ -138,17 +138,18 @@ export const TransactionsView: React.FC = () => {
     <div className="animate-fade-in">
       <div className="flex justify-end items-center mb-8">
         <div className="flex gap-2">
-          <GlassCard
-            className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale"
+          <button
+            type="button"
+            className="glass-btn glass-btn-sm flex items-center gap-2"
             onClick={() => setShowImportModal(true)}
           >
             <Upload size={20} className="text-accent" />
-            <span className="text-sm font-medium">Import Excel</span>
-          </GlassCard>
-          <GlassCard className="p-2 px-4 flex items-center gap-2 cursor-pointer hover-scale" onClick={() => { }}>
+            <span>Import Excel</span>
+          </button>
+          <button type="button" className="glass-btn glass-btn-sm flex items-center gap-2">
             <Download size={20} className="text-accent" />
-            <span className="text-sm font-medium">Export CSV</span>
-          </GlassCard>
+            <span>Export CSV</span>
+          </button>
         </div>
       </div>
 
@@ -187,15 +188,15 @@ export const TransactionsView: React.FC = () => {
           />
 
           <div className="flex gap-2">
-            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-secondary/50" onClick={() => toggleSort('spentAt')}>
-              <Calendar size={18} className="mr-2 text-accent" />
+            <button type="button" className="glass-btn glass-btn-sm flex-1 flex items-center justify-center gap-2" onClick={() => toggleSort('spentAt')}>
+              <Calendar size={18} className="text-accent" />
               <span className="text-xs font-bold uppercase">Date</span>
-              <ArrowUpDown size={14} className="ml-1 text-slate-400" />
-            </GlassCard>
-            <GlassCard className="flex-1 flex-center p-0 cursor-pointer hover:bg-secondary/50" onClick={() => toggleSort('amount')}>
+              <ArrowUpDown size={14} className="text-slate-400" />
+            </button>
+            <button type="button" className="glass-btn glass-btn-sm flex-1 flex items-center justify-center gap-2" onClick={() => toggleSort('amount')}>
               <span className="text-xs font-bold uppercase">Amount</span>
-              <ArrowUpDown size={14} className="ml-1 text-slate-400" />
-            </GlassCard>
+              <ArrowUpDown size={14} className="text-slate-400" />
+            </button>
           </div>
         </div>
       </GlassCard>
@@ -228,7 +229,7 @@ export const TransactionsView: React.FC = () => {
                   {transactions.map((t) => {
                     const account = accounts.find((a) => a.id === t.accountId);
                     return (
-                      <tr key={t.id} className="hover:bg-secondary/50/30 transition-colors">
+                      <tr key={t.id} className="transaction-row">
                         <td className="p-4 text-sm text-slate-600">{new Date(t.spentAt).toLocaleDateString()}</td>
                         <td className="p-4">
                           <p className="text-sm font-semibold text-slate-800 m-0">{t.notes || 'No notes'}</p>

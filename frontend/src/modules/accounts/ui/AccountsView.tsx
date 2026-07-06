@@ -12,7 +12,7 @@ export const AccountsView: React.FC = () => {
   return (
     <div className="animate-fade-in">
       <div className="flex justify-end items-center mb-8">
-        <button onClick={() => setShowAddAccount(true)} className="clay-btn flex items-center gap-2">
+        <button onClick={() => setShowAddAccount(true)} className="clay-btn">
           <Plus size={20} /> {strings.addAccount}
         </button>
       </div>

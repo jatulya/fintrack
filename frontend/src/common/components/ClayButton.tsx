@@ -17,17 +17,17 @@ export const ClayButton: React.FC<ClayButtonProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    primary: 'bg-accent text-white',
-    secondary: 'bg-secondary text-error',
-    danger: 'bg-error text-white',
-    success: 'bg-accent text-white',
+    primary: 'clay-btn',
+    secondary: 'glass-btn glass-btn-ghost',
+    danger: 'clay-btn',
+    success: 'clay-btn',
   };
 
   return (
     <button
       className={cn(
-        'clay-btn font-semibold active:clay-pressed disabled:opacity-50 disabled:cursor-not-allowed',
         variantStyles[variant],
+        'font-semibold active:clay-pressed disabled:opacity-50 disabled:cursor-not-allowed',
         className,
       )}
       {...props}
