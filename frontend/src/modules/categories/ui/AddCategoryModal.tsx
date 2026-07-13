@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { GlassCard } from '../../../common/components/GlassCard';
-import { ClayButton } from '../../../common/components/ClayButton';
+import { CustomModal } from '../../../common/components/CustomModal';
 import { InputField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
 import { strings } from '../../../common/texts/strings';
@@ -18,8 +16,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!label || !name) return;
 
     setIsSubmitting(true);
@@ -35,58 +32,43 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex-center p-4">
-      <GlassCard className="w-full max-w-lg p-0 overflow-hidden animate-fade-in" dark>
-        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
-          <h2 className="text-xl font-bold text-white">Add Category</h2>
-          <button onClick={onClose} className="modal-label hover:text-white transition-colors border-none bg-transparent cursor-pointer">
-            <X size={24} />
-          </button>
-        </div>
+    <CustomModal
+      title="Add Category"
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      primaryText={isSubmitting ? 'Saving...' : strings.save}
+      secondaryText={strings.cancel}
+      primaryDisabled={isSubmitting}
+    >
+      {error && <p className="modal-error text-sm m-0">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <p className="modal-error text-sm m-0">{error}</p>
-          )}
+      <InputField
+        label="Label"
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        placeholder="e.g. dining, salary, entertainment"
+        className="bg-white/5 text-white border-white/10"
+        required
+      />
 
-          <InputField
-            label="Label"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="e.g. dining, salary, entertainment"
-            className="bg-white/5 text-white border-white/10"
-            required
-          />
+      <InputField
+        label="Description"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="e.g. Food from outside, Monthly salary"
+        className="bg-white/5 text-white border-white/10"
+        required
+      />
 
-          <InputField
-            label="Description"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Food from outside, Monthly salary"
-            className="bg-white/5 text-white border-white/10"
-            required
-          />
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-300 ml-1">Color</label>
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="w-full h-12 bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1"
-            />
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <ClayButton type="button" variant="secondary" onClick={onClose} className="flex-1 bg-white/10 text-white">
-              {strings.cancel}
-            </ClayButton>
-            <ClayButton type="submit" variant="primary" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : strings.save}
-            </ClayButton>
-          </div>
-        </form>
-      </GlassCard>
-    </div>
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-slate-300 ml-1">Color</label>
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="w-full h-12 bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1"
+        />
+      </div>
+    </CustomModal>
   );
 };

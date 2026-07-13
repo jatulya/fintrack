@@ -69,17 +69,26 @@ export const InputField = ({
 export const SelectField = ({
   label,
   options,
+  className,
+  labelClassName,
   ...props
-}: { label?: string; options: { value: string; label: string }[] } & SelectHTMLAttributes<HTMLSelectElement>) => {
+}: {
+  label?: string;
+  options: { value: string; label: string }[];
+  labelClassName?: string;
+} & SelectHTMLAttributes<HTMLSelectElement>) => {
   return (
     <div className="col-stack">
-      {label && <label className="text-label">{label}</label>}
+      {label && <label className={cn('text-label', labelClassName)}>{label}</label>}
       <select
-        className="clay p-3 px-4 border-none outline-none focus:ring-2 focus:ring-accent transition-all appearance-none bg-white cursor-pointer w-full"
+        className={cn(
+          'clay p-3 px-4 border-none outline-none focus:ring-2 focus:ring-accent transition-all appearance-none bg-white cursor-pointer w-full',
+          className,
+        )}
         {...props}
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option key={opt.value} value={opt.value} className="bg-white text-slate-800">
             {opt.label}
           </option>
         ))}

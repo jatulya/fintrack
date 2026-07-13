@@ -1,26 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { CustomModal } from '../../../common/components/CustomModal';
 import { InputField, SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
+import type { RecurringPaymentFrequency } from '../../../data/models/recurring/types/recurringTypes';
+import { RECURRING_FREQUENCY_LABELS } from '../../../data/models/recurring/types/recurringTypes';
 import type { TransactionDirection } from '../../../data/models/transactions/types/transactionTypes';
 import { strings } from '../../../common/texts/strings';
 
-interface AddTransactionModalProps {
+interface AddRecurringPaymentModalProps {
   onClose: () => void;
 }
 
-export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose }) => {
-  const { accounts, categories, createTransaction } = useApp();
+export const AddRecurringPaymentModal: React.FC<AddRecurringPaymentModalProps> = ({ onClose }) => {
+  const { accounts, categories, createRecurringPayment } = useApp();
   const [direction, setDirection] = useState<TransactionDirection>('spent');
   const [amount, setAmount] = useState('');
   const [accountId, setAccountId] = useState(accounts[0]?.id || '');
   const [categoryId, setCategoryId] = useState(categories[0]?.id || '');
+  const [frequency, setFrequency] = useState<RecurringPaymentFrequency>('monthly');
   const [notes, setNotes] = useState('');
-  const [spentAt, setSpentAt] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [affectsBalance, setAffectsBalance] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!accountId && accounts[0]?.id) {
+      setAccountId(accounts[0].id);
+    }
+  }, [accounts, accountId]);
+
+  useEffect(() => {
+    if (!categoryId && categories[0]?.id) {
+      setCategoryId(categories[0].id);
+    }
+  }, [categories, categoryId]);
 
   const noAccounts = accounts.length === 0;
   const noCategories = categories.length === 0;
@@ -31,18 +46,19 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
     setIsSubmitting(true);
     setError(null);
     try {
-      await createTransaction({
+      await createRecurringPayment({
         accountId,
         categoryId,
         amount: parseFloat(amount),
-        spentAt,
+        startDate,
         notes,
         direction,
+        frequency,
         affectsBalance,
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create transaction');
+      setError(err instanceof Error ? err.message : 'Failed to create recurring payment');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +66,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
 
   return (
     <CustomModal
-      title={strings.addTransaction}
+      title={strings.addRecurringPayment}
       onClose={onClose}
       onSubmit={handleSubmit}
       primaryText={isSubmitting ? 'Saving...' : strings.save}
@@ -121,22 +137,36 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
           className="bg-white text-slate-800 border-white/10"
         />
 
+        <SelectField
+          label={strings.frequency}
+          labelClassName="modal-label"
+          value={frequency}
+          onChange={(e) => setFrequency(e.target.value as RecurringPaymentFrequency)}
+          options={Object.entries(RECURRING_FREQUENCY_LABELS).map(([value, label]) => ({
+            value,
+            label,
+          }))}
+          className="bg-white text-slate-800 border-white/10"
+        />
+
         <InputField
-          label={strings.date}
+          label={strings.startDate}
           type="date"
-          value={spentAt}
-          onChange={(e) => setSpentAt(e.target.value)}
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
           className="bg-white/5 text-white border-white/10"
           required
         />
 
-        <InputField
-          label={strings.description}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="What was this for?"
-          className="bg-white/5 text-white border-white/10"
-        />
+        <div className="col-span-2">
+          <InputField
+            label={strings.description}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="What is this recurring payment for?"
+            className="bg-white/5 text-white border-white/10"
+          />
+        </div>
 
         <label className="col-span-2 flex items-center gap-3 cursor-pointer">
           <input
@@ -145,7 +175,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             onChange={(e) => setAffectsBalance(e.target.checked)}
             className="w-5 h-5 rounded accent-accent"
           />
-          <span className="text-sm modal-body">Update stash balance for this entry</span>
+          <span className="text-sm modal-body">Update stash balance when entry is posted</span>
         </label>
       </div>
     </CustomModal>

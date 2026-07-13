@@ -7,6 +7,7 @@ import { authRouter } from './modules/auth/auth.routes.js';
 import { accountsRouter } from './modules/accounts/accounts.routes.js';
 import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { transactionsRouter } from './modules/transactions/transactions.routes.js';
+import { recurringPaymentsRouter } from './modules/recurring-payments/recurring-payments.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 export function createApp() {
@@ -34,6 +35,7 @@ export function createApp() {
   app.use(`${env.apiBasePath}/accounts`, accountsRouter);
   app.use(`${env.apiBasePath}/categories`, categoriesRouter);
   app.use(`${env.apiBasePath}/transactions`, transactionsRouter);
+  app.use(`${env.apiBasePath}/recurring-payments`, recurringPaymentsRouter);
 
   app.use(errorHandler);
 

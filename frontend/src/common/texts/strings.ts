@@ -94,6 +94,10 @@ export const strings = {
   finScore: 'Rose Score',
   cashFlowForecast: 'Cash Flow Forecast',
   recurringTransactions: 'Recurring Entries',
+  addRecurringPayment: 'Add Recurring Payment',
+  frequency: 'Frequency',
+  startDate: 'Start Date',
+  nextRun: 'Next Run',
 
   // Common
   save: 'Save',
