@@ -82,8 +82,20 @@ export const strings = {
 
   // Financial Story (Analytics)
   spendingByCategory: 'Spending by Theme',
+  expenseCategorization: 'Expense Categorization',
   incomeVsExpense: 'Income vs Expense',
-  savingsTrend: 'Piggy Bank Trend',
+  periodLabel: 'Time period',
+  periodMonthly: 'Monthly',
+  periodWeekly: 'Weekly',
+  periodYearly: 'Yearly',
+  periodCustom: 'Custom',
+  periodFrom: 'From',
+  periodTo: 'To',
+  allCategories: 'All categories',
+  categoriesSelected: 'categories selected',
+  noCategoriesSelected: 'No categories selected',
+  noExpenseData: 'No data for this period',
+  analyticsLoading: 'Loading your financial story...',
 
   // Budgets
   budgetLimits: 'Budget Limits',
