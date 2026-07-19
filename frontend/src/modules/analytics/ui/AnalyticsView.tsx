@@ -14,11 +14,12 @@ import {
   buildCategoryTotals,
   buildExpenseSeries,
   buildIncomeExpenseSeries,
+  createDefaultPeriodSelection,
+  formatPeriodDisplayLabel,
   getBucketGranularity,
   getExpenseTitle,
   resolvePeriodRange,
-  toDateInputValue,
-  type PeriodPreset,
+  type PeriodSelection,
 } from './periodUtils';
 
 export const AnalyticsView: React.FC = () => {
@@ -26,13 +27,7 @@ export const AnalyticsView: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [preset, setPreset] = useState<PeriodPreset>('monthly');
-  const [customStart, setCustomStart] = useState(() => {
-    const now = new Date();
-    return toDateInputValue(new Date(now.getFullYear(), now.getMonth(), 1));
-  });
-  const [customEnd, setCustomEnd] = useState(() => toDateInputValue(new Date()));
+  const [selection, setSelection] = useState<PeriodSelection>(() => createDefaultPeriodSelection());
 
   const loadAllTransactions = useCallback(async () => {
     setIsLoading(true);
@@ -69,11 +64,12 @@ export const AnalyticsView: React.FC = () => {
     void loadAllTransactions();
   }, [loadAllTransactions, transactionsRevision]);
 
-  const range = useMemo(
-    () => resolvePeriodRange(preset, customStart, customEnd),
-    [preset, customStart, customEnd],
-  );
+  const range = useMemo(() => resolvePeriodRange(selection), [selection]);
   const granularity = useMemo(() => getBucketGranularity(range), [range]);
+  const displayLabel = useMemo(
+    () => formatPeriodDisplayLabel(selection, range),
+    [selection, range],
+  );
 
   const expenseSeries = useMemo(
     () => buildExpenseSeries(transactions, range, granularity),
@@ -108,17 +104,14 @@ export const AnalyticsView: React.FC = () => {
   return (
     <div className="analytics-view animate-fade-in">
       <PeriodSelector
-        preset={preset}
-        customStart={customStart}
-        customEnd={customEnd}
-        onPresetChange={setPreset}
-        onCustomStartChange={setCustomStart}
-        onCustomEndChange={setCustomEnd}
+        selection={selection}
+        displayLabel={displayLabel}
+        onSelectionChange={setSelection}
       />
 
       <div className="analytics-stack">
         <AggregateExpenseChart
-          title={getExpenseTitle(preset)}
+          title={getExpenseTitle(selection.preset)}
           data={expenseSeries}
           granularity={granularity}
         />

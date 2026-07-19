@@ -731,7 +731,7 @@
   }
 
   .analytics-period-bar {
-    @apply flex flex-wrap items-center gap-3;
+    @apply flex flex-wrap items-center justify-between gap-3;
   }
 
   .analytics-period-select-wrap {
@@ -751,6 +751,15 @@
     color: var(--text-muted);
   }
 
+  .analytics-period-right {
+    @apply flex flex-wrap items-center justify-end gap-3 ml-auto;
+  }
+
+  .analytics-period-label {
+    @apply text-sm font-semibold whitespace-nowrap;
+    color: var(--text-primary);
+  }
+
   .analytics-period-custom {
     @apply flex flex-wrap items-center gap-3;
   }
@@ -760,11 +769,49 @@
     color: var(--text-secondary);
   }
 
-  .analytics-period-date-field input {
+  .analytics-period-date-field input,
+  .analytics-period-month-input,
+  .analytics-period-year-input {
     background: var(--clay-bg);
     box-shadow: var(--clay-shadow);
     color: var(--text-primary);
     @apply rounded-xl px-3 py-1.5 text-sm border-0 outline-none;
+  }
+
+  .analytics-period-year-input {
+    @apply w-24;
+  }
+
+  .analytics-week-nav {
+    @apply inline-flex items-center gap-1;
+  }
+
+  .analytics-week-btn {
+    background: var(--clay-bg);
+    box-shadow: var(--clay-shadow);
+    color: var(--text-primary);
+    @apply inline-flex items-center justify-center rounded-full px-2.5 py-1.5 text-sm font-medium border-0 cursor-pointer;
+  }
+
+  .analytics-week-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .analytics-week-btn-current {
+    @apply px-3;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .analytics-chart-card {
@@ -808,13 +855,16 @@
   }
 
   .analytics-donut-wrap {
-    height: 260px;
+    height: 220px;
+    max-width: 220px;
+    width: 100%;
+    margin-inline: auto;
   }
 
   .analytics-chart-tooltip {
     background: var(--error);
-    color: var(--text-inverted);
-    @apply rounded-xl px-3 py-2 shadow-lg;
+    color: var(--primary);
+    @apply rounded-xl px-3 py-2 shadow-lg pointer-events-none;
   }
 
   .analytics-chart-tooltip-value {
@@ -823,6 +873,14 @@
 
   .analytics-chart-tooltip-date {
     @apply text-xs mt-0.5 opacity-80;
+  }
+
+  .analytics-chart-tooltip-row {
+    @apply flex items-center gap-2 text-xs mt-1;
+  }
+
+  .analytics-chart-tooltip-swatch {
+    @apply inline-block w-2.5 h-2.5 rounded-sm shrink-0;
   }
 
   .analytics-empty {
@@ -868,11 +926,12 @@
   }
 
   .analytics-category-layout {
-    @apply grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-6 items-center;
+    @apply grid grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] gap-4 items-center;
   }
 
   .analytics-category-legend {
-    @apply flex flex-col gap-3 list-none m-0 p-0 max-h-[280px] overflow-y-auto;
+    @apply flex flex-col gap-3 list-none m-0 p-0 max-h-[280px] overflow-y-auto pr-2;
+    scrollbar-gutter: stable;
   }
 
   .analytics-category-legend-item {

@@ -33,8 +33,15 @@ function BarsTooltip({
     <div className="analytics-chart-tooltip">
       <p className="analytics-chart-tooltip-value">{label}</p>
       {payload.map((entry) => (
-        <p key={entry.name} className="analytics-chart-tooltip-date" style={{ color: entry.color }}>
-          {entry.name}: {formatCurrency(entry.value)}
+        <p key={entry.name} className="analytics-chart-tooltip-row">
+          <span
+            className="analytics-chart-tooltip-swatch"
+            style={{ backgroundColor: entry.color }}
+            aria-hidden="true"
+          />
+          <span>
+            {entry.name}: {formatCurrency(entry.value)}
+          </span>
         </p>
       ))}
     </div>
@@ -69,7 +76,12 @@ export const IncomeVsExpenseChart: React.FC<IncomeVsExpenseChartProps> = ({ data
                 width={56}
                 tickFormatter={(v: number) => `₹${v >= 1000 ? `${Math.round(v / 1000)}k` : v}`}
               />
-              <Tooltip content={<BarsTooltip />} cursor={{ fill: 'rgba(228, 103, 172, 0.08)' }} />
+              <Tooltip
+                content={<BarsTooltip />}
+                cursor={{ fill: 'rgba(228, 103, 172, 0.08)' }}
+                wrapperStyle={{ zIndex: 20, outline: 'none' }}
+                allowEscapeViewBox={{ x: true, y: true }}
+              />
               <Legend />
               <Bar
                 dataKey="income"
