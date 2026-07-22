@@ -13,9 +13,11 @@ import { unwrapApiResult } from '../../modules/auth/types/authTypes';
 import { accountsApi } from './accountsApi';
 import { categoriesApi } from './categoriesApi';
 import { transactionsApi } from './transactionsApi';
+import { recurringPaymentsApi } from './recurringPaymentsApi';
 import type { Account, CreateAccountInput } from '../models/accounts/types/accountTypes';
 import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
 import type { CreateTransactionInput, Transaction } from '../models/transactions/types/transactionTypes';
+import type { CreateRecurringPaymentInput, RecurringPayment } from '../models/recurring/types/recurringTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
 import { SavingsGoal, Investment } from '../models/goals/types/goalTypes';
 import { BudgetLimit } from '../models/budgets/types/budgetTypes';
@@ -25,12 +27,14 @@ interface AppContextType {
   accounts: Account[];
   transactions: Transaction[];
   transactionsRevision: number;
+  recurringPayments: RecurringPayment[];
   isLoading: boolean;
   error: string | null;
   refreshFinancials: () => Promise<void>;
   createCategory: (input: CreateCategoryInput) => Promise<Category>;
   createAccount: (input: CreateAccountInput) => Promise<Account>;
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
+  createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
   setGoals: (goals: SavingsGoal[]) => void;
@@ -48,6 +52,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsRevision, setTransactionsRevision] = useState(0);
+  const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,15 +64,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setIsLoading(true);
     setError(null);
     try {
-      const [categoriesResult, accountsResult, transactionsResult] = await Promise.all([
+      const [categoriesResult, accountsResult, transactionsResult, recurringResult] = await Promise.all([
         categoriesApi.list(),
         accountsApi.list(),
         transactionsApi.list({ limit: TRANSACTIONS_PAGE_SIZE, offset: 0 }),
+        recurringPaymentsApi.list(),
       ]);
 
       setCategories(unwrapApiResult(categoriesResult).categories);
       setAccounts(unwrapApiResult(accountsResult).accounts);
       setTransactions(unwrapApiResult(transactionsResult).transactions);
+      setRecurringPayments(unwrapApiResult(recurringResult).recurringPayments);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load financial data');
     } finally {
@@ -85,6 +92,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setAccounts([]);
       setTransactions([]);
       setTransactionsRevision(0);
+      setRecurringPayments([]);
       setError(null);
     }
   }, [isAuthenticated, authLoading, refreshFinancials]);
@@ -124,6 +132,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return transaction;
   }, []);
 
+  const createRecurringPayment = useCallback(async (input: CreateRecurringPaymentInput): Promise<RecurringPayment> => {
+    const result = await recurringPaymentsApi.create(input);
+    const recurringPayment = unwrapApiResult(result).recurringPayment;
+
+    // Backfilled past occurrences update transactions and possibly stash balances.
+    await refreshFinancials();
+    setTransactionsRevision((prev) => prev + 1);
+
+    return recurringPayment;
+  }, [refreshFinancials]);
+
   const deleteTransaction = useCallback(async (id: string): Promise<void> => {
     const existing = transactions.find((t) => t.id === id);
     await unwrapApiResult(await transactionsApi.remove(id));
@@ -148,12 +167,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     accounts,
     transactions,
     transactionsRevision,
+    recurringPayments,
     isLoading,
     error,
     refreshFinancials,
     createCategory,
     createAccount,
     createTransaction,
+    createRecurringPayment,
     deleteTransaction,
     goals,
     setGoals,
@@ -166,12 +187,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     accounts,
     transactions,
     transactionsRevision,
+    recurringPayments,
     isLoading,
     error,
     refreshFinancials,
     createCategory,
     createAccount,
     createTransaction,
+    createRecurringPayment,
     deleteTransaction,
     goals,
     setGoals,

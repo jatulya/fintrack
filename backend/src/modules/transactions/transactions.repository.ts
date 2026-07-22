@@ -71,6 +71,29 @@ export class TransactionsRepository {
     return data as TransactionRow;
   }
 
+  async createMany(userId: string, inputs: CreateTransactionInput[]): Promise<TransactionRow[]> {
+    if (inputs.length === 0) return [];
+
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .insert(
+        inputs.map((input) => ({
+          user_id: userId,
+          account_id: input.accountId,
+          category_id: input.categoryId,
+          amount: input.amount,
+          spent_at: input.spentAt,
+          notes: input.notes ?? '',
+          direction: input.direction,
+          affects_balance: input.affectsBalance ?? true,
+        })),
+      )
+      .select('*');
+
+    if (error) throw error;
+    return (data ?? []) as TransactionRow[];
+  }
+
   async findById(userId: string, id: string): Promise<TransactionRow | null> {
     const { data, error } = await supabaseAdmin
       .from(TABLE)

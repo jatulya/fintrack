@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet, Loader2, Upload } from 'lucide-react';
+import { Search, ArrowUpDown, Download, Trash2, Calendar, Tag, Wallet, Loader2, Upload, Plus, Repeat } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
 import { SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
@@ -15,10 +15,13 @@ import type { Transaction, TransactionSortField } from '../../../data/models/tra
 import { TRANSACTIONS_PAGE_SIZE } from '../../../data/models/transactions/types/transactionTypes';
 import { strings } from '../../../common/texts/strings';
 import { ImportTransactionsModal } from './ImportTransactionsModal';
+import { AddRecurringPaymentModal } from './AddRecurringPaymentModal';
+import { RECURRING_FREQUENCY_LABELS } from '../../../data/models/recurring/types/recurringTypes';
 
 export const TransactionsView: React.FC = () => {
-  const { accounts, deleteTransaction, transactionsRevision } = useApp();
+  const { accounts, deleteTransaction, transactionsRevision, recurringPayments } = useApp();
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddRecurringModal, setShowAddRecurringModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [directionFilter, setDirectionFilter] = useState<string>('All');
@@ -140,6 +143,14 @@ export const TransactionsView: React.FC = () => {
         <div className="flex gap-2">
           <button
             type="button"
+            className="clay-btn flex items-center gap-2"
+            onClick={() => setShowAddRecurringModal(true)}
+          >
+            <Plus size={20} />
+            <span>{strings.addRecurringPayment}</span>
+          </button>
+          <button
+            type="button"
             className="glass-btn glass-btn-sm flex items-center gap-2"
             onClick={() => setShowImportModal(true)}
           >
@@ -200,6 +211,55 @@ export const TransactionsView: React.FC = () => {
           </div>
         </div>
       </GlassCard>
+
+      {recurringPayments.length > 0 && (
+        <GlassCard className="mb-8 p-0 overflow-hidden">
+          <div className="p-4 border-b border-slate-100 flex items-center gap-2">
+            <Repeat size={18} className="text-accent" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-600 m-0">
+              {strings.recurringTransactions}
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">{strings.nextRun}</th>
+                  <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Notes</th>
+                  <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Category</th>
+                  <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Account</th>
+                  <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">{strings.frequency}</th>
+                  <th className="p-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recurringPayments.map((payment) => (
+                    <tr key={payment.id} className="transaction-row">
+                      <td className="p-4 text-sm text-slate-600">{new Date(payment.nextRunAt).toLocaleDateString()}</td>
+                      <td className="p-4">
+                        <p className="text-sm font-semibold text-slate-800 m-0">{payment.notes || 'No notes'}</p>
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-accent-soft text-xs font-medium">
+                          <Tag size={12} /> {payment.categoryLabel}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                          <Wallet size={14} /> {payment.accountName}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-slate-600">{RECURRING_FREQUENCY_LABELS[payment.frequency]}</td>
+                      <td className={`p-4 text-right font-bold ${payment.direction === 'received' ? 'text-increase' : 'text-decrease'}`}>
+                        {payment.direction === 'received' ? '+' : '-'}₹{payment.amount.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </GlassCard>
+      )}
 
       <GlassCard className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
@@ -315,6 +375,10 @@ export const TransactionsView: React.FC = () => {
           onClose={() => setShowImportModal(false)}
           onImportComplete={() => void fetchPage(true)}
         />
+      )}
+
+      {showAddRecurringModal && (
+        <AddRecurringPaymentModal onClose={() => setShowAddRecurringModal(false)} />
       )}
     </div>
   );
