@@ -1,101 +1,126 @@
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from 'recharts';
-import { GlassCard } from '../../../common/components/GlassCard';
-import { strings } from '../../../common/texts/strings';
-import { colors } from '../../../common/themes/colors';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useApp } from '../../../data/api/AppContext';
+import { transactionsApi } from '../../../data/api/transactionsApi';
+import { unwrapApiResult } from '../../../modules/auth/types/authTypes';
+import type { Transaction } from '../../../data/models/transactions/types/transactionTypes';
+import { TRANSACTIONS_PAGE_SIZE } from '../../../data/models/transactions/types/transactionTypes';
+import { strings } from '../../../common/texts/strings';
+import { AggregateExpenseChart } from './AggregateExpenseChart';
+import { ExpenseCategoryChart } from './ExpenseCategoryChart';
+import { IncomeVsExpenseChart } from './IncomeVsExpenseChart';
+import { PeriodSelector } from './PeriodSelector';
+import {
+  buildCategoryTotals,
+  buildExpenseSeries,
+  buildIncomeExpenseSeries,
+  createDefaultPeriodSelection,
+  formatPeriodDisplayLabel,
+  getBucketGranularity,
+  getExpenseTitle,
+  resolvePeriodRange,
+  type PeriodSelection,
+} from './periodUtils';
 
 export const AnalyticsView: React.FC = () => {
-  const { transactions } = useApp();
+  const { transactionsRevision } = useApp();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selection, setSelection] = useState<PeriodSelection>(() => createDefaultPeriodSelection());
 
-  const categoryDataMap = transactions
-    .filter((t) => t.direction === 'spent')
-    .reduce((acc, t) => {
-      acc[t.categoryLabel] = (acc[t.categoryLabel] || 0) + t.amount;
-      return acc;
-    }, {} as Record<string, number>);
+  const loadAllTransactions = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const all: Transaction[] = [];
+      let offset = 0;
+      let hasMore = true;
 
-  const categoryData = Object.entries(categoryDataMap).map(([name, value]) => ({ name, value }));
+      while (hasMore) {
+        const result = await transactionsApi.list({
+          limit: TRANSACTIONS_PAGE_SIZE,
+          offset,
+          sortBy: 'spentAt',
+          sortOrder: 'asc',
+        });
+        const page = unwrapApiResult(result);
+        all.push(...page.transactions);
+        hasMore = page.hasMore;
+        offset += page.transactions.length;
+        if (page.transactions.length === 0) break;
+      }
 
-  const monthlyDataMap = transactions.reduce((acc, t) => {
-    const month = t.spentAt.substring(0, 7);
-    if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
-    if (t.direction === 'received') acc[month].income += t.amount;
-    if (t.direction === 'spent') acc[month].expense += t.amount;
-    return acc;
-  }, {} as Record<string, { month: string; income: number; expense: number }>);
+      setTransactions(all);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load analytics data');
+      setTransactions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const monthlyData = Object.values(monthlyDataMap).sort((a, b) => a.month.localeCompare(b.month));
+  useEffect(() => {
+    void loadAllTransactions();
+  }, [loadAllTransactions, transactionsRevision]);
 
-  const CHART_COLORS = [colors.accent, colors.secondary, colors.error, '#c9a0b8', '#f0b8d0', '#d484ad'];
+  const range = useMemo(() => resolvePeriodRange(selection), [selection]);
+  const granularity = useMemo(() => getBucketGranularity(range), [range]);
+  const displayLabel = useMemo(
+    () => formatPeriodDisplayLabel(selection, range),
+    [selection, range],
+  );
+
+  const expenseSeries = useMemo(
+    () => buildExpenseSeries(transactions, range, granularity),
+    [transactions, range, granularity],
+  );
+  const incomeExpenseSeries = useMemo(
+    () => buildIncomeExpenseSeries(transactions, range, granularity),
+    [transactions, range, granularity],
+  );
+  const categoryData = useMemo(
+    () => buildCategoryTotals(transactions, range),
+    [transactions, range],
+  );
+
+  if (isLoading) {
+    return (
+      <div className="analytics-loading animate-fade-in">
+        <Loader2 className="animate-spin" size={28} />
+        <span>{strings.analyticsLoading}</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="analytics-loading animate-fade-in">
+        <p className="text-decrease">{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="animate-fade-in">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <GlassCard>
-          <h3 className="font-semibold text-lg mb-6">{strings.spendingByCategory}</h3>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
+    <div className="analytics-view animate-fade-in">
+      <PeriodSelector
+        selection={selection}
+        displayLabel={displayLabel}
+        onSelectionChange={setSelection}
+      />
 
-        <GlassCard>
-          <h3 className="font-semibold text-lg mb-6">{strings.incomeVsExpense}</h3>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="income" fill={colors.accent} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" fill={colors.error} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
-      </div>
+      <div className="analytics-stack">
+        <AggregateExpenseChart
+          title={getExpenseTitle(selection.preset)}
+          data={expenseSeries}
+          granularity={granularity}
+        />
 
-      <GlassCard className="mb-8">
-        <h3 className="font-semibold text-lg mb-6">{strings.savingsTrend}</h3>
-        <div style={{ height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={monthlyData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey={(d) => d.income - d.expense}
-                name="Net Savings"
-                stroke={colors.accent}
-                strokeWidth={3}
-                dot={{ r: 6 }}
-                activeDot={{ r: 8 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="analytics-grid">
+          <ExpenseCategoryChart data={categoryData} />
+          <IncomeVsExpenseChart data={incomeExpenseSeries} />
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 };
