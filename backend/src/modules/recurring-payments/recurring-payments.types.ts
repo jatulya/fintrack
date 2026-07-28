@@ -50,6 +50,12 @@ export interface PublicRecurringPayment {
   updatedAt: string;
 }
 
+export interface ProcessRecurringPaymentsResult {
+  processedCount: number;
+  createdCount: number;
+  recurringPayments: PublicRecurringPayment[];
+}
+
 export interface CreateRecurringPaymentInput extends MoneyEntryFields {
   frequency: RecurringPaymentFrequency;
   startDate: string;

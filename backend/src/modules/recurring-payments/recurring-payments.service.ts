@@ -1,10 +1,11 @@
 import { accountsService } from '../accounts/accounts.service.js';
 import { categoriesRepository } from '../categories/categories.repository.js';
 import { recurringPaymentsRepository } from './recurring-payments.repository.js';
-import { buildRecurringSchedule } from './recurring-schedule.js';
+import { buildRecurringSchedule, collectDueDates, todayDateOnly } from './recurring-schedule.js';
 import { transactionsRepository } from '../transactions/transactions.repository.js';
 import type {
   CreateRecurringPaymentInput,
+  ProcessRecurringPaymentsResult,
   PublicRecurringPayment,
   RecurringPaymentWithRelations,
 } from './recurring-payments.types.js';
@@ -103,6 +104,71 @@ export class RecurringPaymentsService {
       isActive: row.is_active,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+    };
+  }
+
+  /**
+   * Creates missing transactions for active recurring payments whose next run
+   * is on or before today (manual stand-in for a cron job).
+   */
+  async processDue(userId: string): Promise<ProcessRecurringPaymentsResult> {
+    const today = todayDateOnly();
+    const duePayments = await this.repo.findActiveDueByUser(userId, today);
+
+    let createdCount = 0;
+
+    for (const payment of duePayments) {
+      const { dueDates, nextPaymentDate } = collectDueDates(
+        payment.next_payment_date,
+        payment.frequency,
+        today,
+      );
+
+      if (dueDates.length === 0) {
+        continue;
+      }
+
+      const existingDates = await this.transactionsRepo.findExistingOccurrenceDates(userId, {
+        accountId: payment.account_id,
+        categoryId: payment.category_id,
+        amount: Number(payment.amount),
+        direction: payment.direction,
+        spentAts: dueDates,
+      });
+
+      const datesToCreate = dueDates.filter((date) => !existingDates.has(date));
+
+      if (datesToCreate.length > 0) {
+        const transactionInputs: CreateTransactionInput[] = datesToCreate.map((spentAt) => ({
+          accountId: payment.account_id,
+          categoryId: payment.category_id,
+          amount: Number(payment.amount),
+          spentAt,
+          notes: payment.notes,
+          direction: payment.direction,
+          affectsBalance: payment.affects_balance,
+        }));
+
+        await this.transactionsRepo.createMany(userId, transactionInputs);
+
+        if (payment.affects_balance) {
+          const totalDelta =
+            balanceDelta(payment.direction, Number(payment.amount)) * datesToCreate.length;
+          await this.accounts.adjustAmount(userId, payment.account_id, totalDelta);
+        }
+
+        createdCount += datesToCreate.length;
+      }
+
+      await this.repo.updateNextPaymentDate(userId, payment.id, nextPaymentDate);
+    }
+
+    const recurringPayments = await this.list(userId);
+
+    return {
+      processedCount: duePayments.length,
+      createdCount,
+      recurringPayments,
     };
   }
 }

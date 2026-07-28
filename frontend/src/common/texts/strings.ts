@@ -112,9 +112,13 @@ export const strings = {
   cashFlowForecast: 'Cash Flow Forecast',
   recurringTransactions: 'Recurring Entries',
   addRecurringPayment: 'Add Recurring Payment',
+  processDueRecurring: 'Run Due Payments',
+  normalPaymentsTab: 'Payments',
+  recurringPaymentsTab: 'Recurring',
   frequency: 'Frequency',
   startDate: 'Start Date',
   nextRun: 'Next Run',
+  allCategories: 'All Categories',
 
   // Common
   save: 'Save',

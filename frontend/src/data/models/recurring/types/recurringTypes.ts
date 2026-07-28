@@ -32,6 +32,12 @@ export interface CreateRecurringPaymentInput {
   affectsBalance?: boolean;
 }
 
+export interface ProcessRecurringPaymentsResult {
+  processedCount: number;
+  createdCount: number;
+  recurringPayments: RecurringPayment[];
+}
+
 export const RECURRING_FREQUENCY_LABELS: Record<RecurringPaymentFrequency, string> = {
   weekly: 'Weekly',
   monthly: 'Monthly',

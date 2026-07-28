@@ -35,6 +35,7 @@ interface AppContextType {
   createAccount: (input: CreateAccountInput) => Promise<Account>;
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
+  processDueRecurringPayments: () => Promise<{ processedCount: number; createdCount: number }>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
   setGoals: (goals: SavingsGoal[]) => void;
@@ -143,6 +144,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return recurringPayment;
   }, [refreshFinancials]);
 
+  const processDueRecurringPayments = useCallback(async () => {
+    const result = await recurringPaymentsApi.processDue();
+    const data = unwrapApiResult(result);
+    setRecurringPayments(data.recurringPayments);
+    if (data.createdCount > 0) {
+      await refreshFinancials();
+    }
+    return {
+      processedCount: data.processedCount,
+      createdCount: data.createdCount,
+    };
+  }, [refreshFinancials]);
+
   const deleteTransaction = useCallback(async (id: string): Promise<void> => {
     const existing = transactions.find((t) => t.id === id);
     await unwrapApiResult(await transactionsApi.remove(id));
@@ -176,6 +190,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createAccount,
     createTransaction,
     createRecurringPayment,
+    processDueRecurringPayments,
     deleteTransaction,
     goals,
     setGoals,
@@ -196,6 +211,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createAccount,
     createTransaction,
     createRecurringPayment,
+    processDueRecurringPayments,
     deleteTransaction,
     goals,
     setGoals,

@@ -22,6 +22,23 @@ export class RecurringPaymentsRepository {
     return (data ?? []) as RecurringPaymentWithRelations[];
   }
 
+  async findActiveDueByUser(
+    userId: string,
+    asOfDate: string,
+  ): Promise<RecurringPaymentWithRelations[]> {
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .select("*, categories(name, label), accounts(name)")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .is("deleted_at", null)
+      .lte("next_payment_date", asOfDate)
+      .order("next_payment_date", { ascending: true });
+
+    if (error) throw error;
+    return (data ?? []) as RecurringPaymentWithRelations[];
+  }
+
   async create(
     userId: string,
     input: CreateRecurringPaymentInput,

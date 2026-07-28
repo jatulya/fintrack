@@ -19,6 +19,15 @@ export class RecurringPaymentsController {
       next(err);
     }
   };
+
+  processDue = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await recurringPaymentsService.processDue(req.user!.sub);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const recurringPaymentsController = new RecurringPaymentsController();

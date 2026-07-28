@@ -1,42 +1,39 @@
-import { transactionsRepository } from '../transactions/transactions.repository.js';
+import { transactionsRepository } from "../transactions/transactions.repository.js";
 import type {
   AggregationTransaction,
   CategoryBucketSummary,
   DashboardSummary,
-} from './dashboard.types.js';
+} from "./dashboard.types.js";
 
-type Bucket = 'savings' | 'investments';
+type Bucket = "savings" | "investments";
 
 function monthKey(date: Date): string {
   return date.toISOString().substring(0, 7);
 }
 
 function previousMonthKey(from: Date = new Date()): string {
-  const previous = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth() - 1, 1));
+  const previous = new Date(
+    Date.UTC(from.getUTCFullYear(), from.getUTCMonth() - 1, 1),
+  );
   return monthKey(previous);
 }
 
 function categoryText(tx: AggregationTransaction): string {
-  const label = tx.categories?.label ?? '';
-  const name = tx.categories?.name ?? '';
+  const label = tx.categories?.label ?? "";
+  const name = tx.categories?.name ?? "";
   return `${label} ${name}`.toLowerCase();
 }
 
 function matchesBucket(tx: AggregationTransaction, bucket: Bucket): boolean {
   const text = categoryText(tx);
-  if (bucket === 'savings') {
+  if (bucket === "savings") {
     return /\bsavings?\b/.test(text);
   }
   return /\binvestments?\b/.test(text);
 }
 
-/** Contributions into a bucket: spent adds, received (withdrawals) subtract. */
-function contribution(tx: AggregationTransaction): number {
-  const amount = Number(tx.amount);
-  return tx.direction === 'spent' ? amount : -amount;
-}
-
-function sumContributions(
+/** Sum of transaction amounts in the bucket category (direction-agnostic). */
+function sumAmounts(
   transactions: AggregationTransaction[],
   bucket: Bucket,
   month?: string,
@@ -48,7 +45,7 @@ function sumContributions(
     if (month && !tx.spent_at.startsWith(month)) {
       return total;
     }
-    return total + contribution(tx);
+    return total + Number(tx.amount);
   }, 0);
 }
 
@@ -66,9 +63,9 @@ function bucketSummary(
   currentMonth: string,
   previousMonth: string,
 ): CategoryBucketSummary {
-  const amount = Math.max(0, sumContributions(transactions, bucket));
-  const currentMonthAmount = sumContributions(transactions, bucket, currentMonth);
-  const previousMonthAmount = sumContributions(transactions, bucket, previousMonth);
+  const amount = sumAmounts(transactions, bucket);
+  const currentMonthAmount = sumAmounts(transactions, bucket, currentMonth);
+  const previousMonthAmount = sumAmounts(transactions, bucket, previousMonth);
 
   return {
     amount: Math.round(amount * 100) / 100,
@@ -89,7 +86,7 @@ function calculateSavingsRate(
     }
 
     const amount = Number(tx.amount);
-    if (tx.direction === 'received') {
+    if (tx.direction === "received") {
       income += amount;
     } else {
       expense += amount;
@@ -120,8 +117,18 @@ export class DashboardService {
     const previousMonth = previousMonthKey(now);
 
     return {
-      savings: bucketSummary(transactions, 'savings', currentMonth, previousMonth),
-      investments: bucketSummary(transactions, 'investments', currentMonth, previousMonth),
+      savings: bucketSummary(
+        transactions,
+        "savings",
+        currentMonth,
+        previousMonth,
+      ),
+      investments: bucketSummary(
+        transactions,
+        "investments",
+        currentMonth,
+        previousMonth,
+      ),
       savingsRate: calculateSavingsRate(transactions, currentMonth),
     };
   }

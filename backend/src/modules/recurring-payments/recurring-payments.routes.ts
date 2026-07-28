@@ -10,3 +10,4 @@ recurringPaymentsRouter.use(authenticate);
 
 recurringPaymentsRouter.get('/', recurringPaymentsController.list);
 recurringPaymentsRouter.post('/', createRecurringPaymentValidation, validateRequest, recurringPaymentsController.create);
+recurringPaymentsRouter.post('/process-due', recurringPaymentsController.processDue);
