@@ -117,6 +117,36 @@ export class TransactionsRepository {
 
     if (error) throw error;
   }
+
+  async findAllWithCategoryForUser(userId: string): Promise<TransactionWithCategory[]> {
+    const pageSize = 1000;
+    let offset = 0;
+    const rows: TransactionWithCategory[] = [];
+
+    while (true) {
+      const { data, error } = await supabaseAdmin
+        .from(TABLE)
+        .select('*, categories(name, label)')
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .order('spent_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(offset, offset + pageSize - 1);
+
+      if (error) throw error;
+
+      const page = (data ?? []) as TransactionWithCategory[];
+      rows.push(...page);
+
+      if (page.length < pageSize) {
+        break;
+      }
+
+      offset += pageSize;
+    }
+
+    return rows;
+  }
 }
 
 export const transactionsRepository = new TransactionsRepository();

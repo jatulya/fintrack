@@ -632,6 +632,14 @@
     color: var(--accent);
   }
 
+  .balance-summary-card-meta-positive {
+    color: var(--accent);
+  }
+
+  .balance-summary-card-meta-negative {
+    color: var(--error);
+  }
+
   .dashboard-stashes-row {
     @apply mb-8;
   }
