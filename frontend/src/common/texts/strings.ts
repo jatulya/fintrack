@@ -112,9 +112,15 @@ export const strings = {
   cashFlowForecast: 'Cash Flow Forecast',
   recurringTransactions: 'Recurring Entries',
   addRecurringPayment: 'Add Recurring Payment',
+  editRecurringPayment: 'Edit Recurring Payment',
+  pauseRecurringPayment: 'Pause',
+  resumeRecurringPayment: 'Resume',
+  editTransaction: 'Edit Money Diary Entry',
   frequency: 'Frequency',
   startDate: 'Start Date',
   nextRun: 'Next Run',
+  paused: 'Paused',
+  active: 'Active',
 
   // Common
   save: 'Save',

@@ -19,6 +19,19 @@ export class RecurringPaymentsController {
       next(err);
     }
   };
+
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const recurringPayment = await recurringPaymentsService.update(
+        req.user!.sub,
+        req.params.id as string,
+        req.body,
+      );
+      res.json({ success: true, data: { recurringPayment } });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const recurringPaymentsController = new RecurringPaymentsController();

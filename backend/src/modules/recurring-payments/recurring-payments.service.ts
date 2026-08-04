@@ -1,12 +1,20 @@
 import { accountsService } from '../accounts/accounts.service.js';
 import { categoriesRepository } from '../categories/categories.repository.js';
 import { recurringPaymentsRepository } from './recurring-payments.repository.js';
-import { buildRecurringSchedule } from './recurring-schedule.js';
+import {
+  addFrequency,
+  buildRecurringSchedule,
+  formatDateOnly,
+  parseDateOnly,
+  todayDateOnly,
+} from './recurring-schedule.js';
 import { transactionsRepository } from '../transactions/transactions.repository.js';
 import type {
   CreateRecurringPaymentInput,
   PublicRecurringPayment,
+  RecurringPaymentFrequency,
   RecurringPaymentWithRelations,
+  UpdateRecurringPaymentInput,
 } from './recurring-payments.types.js';
 import type { CreateTransactionInput } from '../transactions/transactions.types.js';
 import { NotFoundError } from '../../utils/errors.js';
@@ -34,6 +42,26 @@ function toPublicRecurringPayment(row: RecurringPaymentWithRelations): PublicRec
 
 function balanceDelta(direction: string, amount: number): number {
   return direction === 'received' ? amount : -amount;
+}
+
+/** Advance a date until it is strictly after today, using the given frequency. */
+function advanceToFuture(
+  fromDate: string,
+  frequency: RecurringPaymentFrequency,
+  today: string = todayDateOnly(),
+): string {
+  const todayDate = parseDateOnly(today);
+  let cursor = parseDateOnly(fromDate);
+
+  if (cursor > todayDate) {
+    return formatDateOnly(cursor);
+  }
+
+  while (cursor <= todayDate) {
+    cursor = addFrequency(cursor, frequency);
+  }
+
+  return formatDateOnly(cursor);
 }
 
 export class RecurringPaymentsService {
@@ -104,6 +132,50 @@ export class RecurringPaymentsService {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
+  }
+
+  /**
+   * Updates the recurring template only. Existing (past) transactions are left unchanged;
+   * subsequent generated occurrences use the new values.
+   */
+  async update(
+    userId: string,
+    id: string,
+    input: UpdateRecurringPaymentInput,
+  ): Promise<PublicRecurringPayment> {
+    const existing = await this.repo.findById(userId, id);
+    if (!existing) {
+      throw new NotFoundError(errorMessages.financial.recurringPaymentNotFound);
+    }
+
+    const nextAccountId = input.accountId ?? existing.account_id;
+    const nextCategoryId = input.categoryId ?? existing.category_id;
+    const nextFrequency = input.frequency ?? existing.frequency;
+    const nextIsActive = input.isActive ?? existing.is_active;
+
+    const account = await this.accounts.getById(userId, nextAccountId);
+    if (!account) {
+      throw new NotFoundError(errorMessages.financial.accountNotFound);
+    }
+
+    const category = await this.categoriesRepo.findById(userId, nextCategoryId);
+    if (!category) {
+      throw new NotFoundError(errorMessages.financial.categoryNotFound);
+    }
+
+    let nextPaymentDate: string | undefined;
+    const resuming = existing.is_active === false && nextIsActive === true;
+    if (resuming) {
+      // Skip missed occurrences while paused; resume from the next future date.
+      nextPaymentDate = advanceToFuture(existing.next_payment_date, nextFrequency);
+    }
+
+    const row = await this.repo.update(userId, id, {
+      ...input,
+      ...(nextPaymentDate ? { nextPaymentDate } : {}),
+    });
+
+    return toPublicRecurringPayment(row);
   }
 }
 

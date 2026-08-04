@@ -5,6 +5,7 @@ import type {
   ListTransactionsParams,
   PaginatedTransactionList,
   Transaction,
+  UpdateTransactionInput,
 } from '../models/transactions/types/transactionTypes';
 
 function buildQueryString(params: ListTransactionsParams = {}): string {
@@ -31,6 +32,13 @@ export const transactionsApi = {
   create(input: CreateTransactionInput) {
     return httpClient<ApiResult<{ transaction: Transaction }>>('/transactions', {
       method: 'POST',
+      body: input,
+    });
+  },
+
+  update(id: string, input: UpdateTransactionInput) {
+    return httpClient<ApiResult<{ transaction: Transaction }>>(`/transactions/${id}`, {
+      method: 'PATCH',
       body: input,
     });
   },

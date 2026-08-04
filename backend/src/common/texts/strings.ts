@@ -19,6 +19,7 @@ export const errorMessages = {
     accountNotFound: 'Account not found',
     categoryNotFound: 'Category not found',
     transactionNotFound: 'Transaction not found',
+    recurringPaymentNotFound: 'Recurring payment not found',
     importJobNotFound: 'Import job not found',
     importFileRequired: 'An Excel file is required',
     invalidImportFile: 'Only .xlsx, .xls, or .csv files are allowed',
