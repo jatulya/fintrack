@@ -32,6 +32,15 @@ export class RecurringPaymentsController {
       next(err);
     }
   };
+
+  remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await recurringPaymentsService.delete(req.user!.sub, req.params.id as string);
+      res.json({ success: true, data: { message: 'Recurring payment deleted' } });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const recurringPaymentsController = new RecurringPaymentsController();

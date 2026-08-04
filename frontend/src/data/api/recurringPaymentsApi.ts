@@ -24,4 +24,10 @@ export const recurringPaymentsApi = {
       body: input,
     });
   },
+
+  remove(id: string) {
+    return httpClient<ApiResult<{ message: string }>>(`/recurring-payments/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };

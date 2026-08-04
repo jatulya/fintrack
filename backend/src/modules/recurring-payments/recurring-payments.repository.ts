@@ -115,6 +115,21 @@ export class RecurringPaymentsRepository {
 
     if (error) throw error;
   }
+
+  async softDelete(userId: string, id: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from(TABLE)
+      .update({
+        deleted_at: new Date().toISOString(),
+        is_active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("user_id", userId)
+      .is("deleted_at", null);
+
+    if (error) throw error;
+  }
 }
 
 export const recurringPaymentsRepository = new RecurringPaymentsRepository();

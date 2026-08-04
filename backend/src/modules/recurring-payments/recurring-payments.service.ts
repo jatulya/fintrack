@@ -177,6 +177,19 @@ export class RecurringPaymentsService {
 
     return toPublicRecurringPayment(row);
   }
+
+  /**
+   * Soft-deletes the recurring template so no future entries are created.
+   * Existing transactions generated from past runs are left unchanged.
+   */
+  async delete(userId: string, id: string): Promise<void> {
+    const existing = await this.repo.findById(userId, id);
+    if (!existing) {
+      throw new NotFoundError(errorMessages.financial.recurringPaymentNotFound);
+    }
+
+    await this.repo.softDelete(userId, id);
+  }
 }
 
 export const recurringPaymentsService = new RecurringPaymentsService();

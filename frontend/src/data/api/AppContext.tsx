@@ -46,6 +46,7 @@ interface AppContextType {
   updateTransaction: (id: string, input: UpdateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
   updateRecurringPayment: (id: string, input: UpdateRecurringPaymentInput) => Promise<RecurringPayment>;
+  deleteRecurringPayment: (id: string) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
   setGoals: (goals: SavingsGoal[]) => void;
@@ -183,6 +184,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return recurringPayment;
   }, []);
 
+  const deleteRecurringPayment = useCallback(async (id: string): Promise<void> => {
+    await unwrapApiResult(await recurringPaymentsApi.remove(id));
+    setRecurringPayments((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
   const deleteTransaction = useCallback(async (id: string): Promise<void> => {
     const existing = transactions.find((t) => t.id === id);
     await unwrapApiResult(await transactionsApi.remove(id));
@@ -218,6 +224,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateTransaction,
     createRecurringPayment,
     updateRecurringPayment,
+    deleteRecurringPayment,
     deleteTransaction,
     goals,
     setGoals,
@@ -241,6 +248,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateTransaction,
     createRecurringPayment,
     updateRecurringPayment,
+    deleteRecurringPayment,
     deleteTransaction,
     goals,
     setGoals,

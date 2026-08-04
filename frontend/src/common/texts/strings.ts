@@ -113,6 +113,7 @@ export const strings = {
   recurringTransactions: 'Recurring Entries',
   addRecurringPayment: 'Add Recurring Payment',
   editRecurringPayment: 'Edit Recurring Payment',
+  deleteRecurringPayment: 'Delete Recurring Payment',
   pauseRecurringPayment: 'Pause',
   resumeRecurringPayment: 'Resume',
   editTransaction: 'Edit Money Diary Entry',

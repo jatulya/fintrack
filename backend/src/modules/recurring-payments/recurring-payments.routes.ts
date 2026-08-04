@@ -4,6 +4,7 @@ import { validateRequest } from '../../middleware/validate.middleware.js';
 import { recurringPaymentsController } from './recurring-payments.controller.js';
 import {
   createRecurringPaymentValidation,
+  recurringPaymentIdParam,
   updateRecurringPaymentValidation,
 } from './recurring-payments.validation.js';
 
@@ -14,3 +15,4 @@ recurringPaymentsRouter.use(authenticate);
 recurringPaymentsRouter.get('/', recurringPaymentsController.list);
 recurringPaymentsRouter.post('/', createRecurringPaymentValidation, validateRequest, recurringPaymentsController.create);
 recurringPaymentsRouter.patch('/:id', updateRecurringPaymentValidation, validateRequest, recurringPaymentsController.update);
+recurringPaymentsRouter.delete('/:id', recurringPaymentIdParam, validateRequest, recurringPaymentsController.remove);

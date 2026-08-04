@@ -23,7 +23,7 @@ import { EditTransactionModal } from './EditTransactionModal';
 import { RECURRING_FREQUENCY_LABELS } from '../../../data/models/recurring/types/recurringTypes';
 
 export const TransactionsView: React.FC = () => {
-  const { accounts, deleteTransaction, updateRecurringPayment, transactionsRevision, recurringPayments } = useApp();
+  const { accounts, deleteTransaction, updateRecurringPayment, deleteRecurringPayment, transactionsRevision, recurringPayments } = useApp();
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddRecurringModal, setShowAddRecurringModal] = useState(false);
   const [editingRecurring, setEditingRecurring] = useState<RecurringPayment | null>(null);
@@ -153,6 +153,22 @@ export const TransactionsView: React.FC = () => {
       alert(err instanceof Error ? err.message : `Failed to ${actionLabel} recurring payment`);
     } finally {
       setTogglingRecurringId(null);
+    }
+  };
+
+  const handleDeleteRecurring = async (payment: RecurringPayment) => {
+    if (
+      !window.confirm(
+        'Delete this recurring payment? Past transactions will stay; nothing new will be added going forward.',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteRecurringPayment(payment.id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete recurring payment');
     }
   };
 
@@ -300,6 +316,13 @@ export const TransactionsView: React.FC = () => {
                               icon: payment.isActive ? Pause : Play,
                               disabled: togglingRecurringId === payment.id,
                               onClick: () => void handleToggleRecurring(payment),
+                            },
+                            {
+                              id: 'delete',
+                              label: strings.deleteRecurringPayment,
+                              icon: Trash2,
+                              danger: true,
+                              onClick: () => void handleDeleteRecurring(payment),
                             },
                           ]}
                         />
