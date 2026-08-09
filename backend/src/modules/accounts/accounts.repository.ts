@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../../config/supabase.js';
-import type { AccountRow, CreateAccountInput } from './accounts.types.js';
+import type { AccountRow, CreateAccountInput, UpdateAccountInput } from './accounts.types.js';
 
 const TABLE = 'accounts';
 
@@ -49,6 +49,28 @@ export class AccountsRepository {
     const { data, error } = await supabaseAdmin
       .from(TABLE)
       .update({ amount })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    return data as AccountRow;
+  }
+
+  async update(userId: string, id: string, input: UpdateAccountInput): Promise<AccountRow> {
+    const patch: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (input.name !== undefined) patch.name = input.name;
+    if (input.amount !== undefined) patch.amount = input.amount;
+    if (input.notes !== undefined) patch.notes = input.notes;
+
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .update(patch)
       .eq('id', id)
       .eq('user_id', userId)
       .is('deleted_at', null)

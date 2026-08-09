@@ -7,6 +7,7 @@ import type {
   PaginatedTransactions,
   PublicTransaction,
   TransactionWithCategory,
+  UpdateTransactionInput,
 } from './transactions.types.js';
 import { NotFoundError } from '../../utils/errors.js';
 import { errorMessages } from '../../common/texts/strings.js';
@@ -81,6 +82,59 @@ export class TransactionsService {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
+  }
+
+  async update(userId: string, id: string, input: UpdateTransactionInput): Promise<PublicTransaction> {
+    const existing = await this.repo.findById(userId, id);
+    if (!existing) {
+      throw new NotFoundError(errorMessages.financial.transactionNotFound);
+    }
+
+    const nextAccountId = input.accountId ?? existing.account_id;
+    const nextCategoryId = input.categoryId ?? existing.category_id;
+    const nextAmount = input.amount ?? Number(existing.amount);
+    const nextSpentAt = input.spentAt ?? existing.spent_at;
+    const nextNotes = input.notes ?? existing.notes;
+    const nextDirection = input.direction ?? existing.direction;
+    const nextAffectsBalance = input.affectsBalance ?? existing.affects_balance;
+
+    const account = await this.accounts.getById(userId, nextAccountId);
+    if (!account) {
+      throw new NotFoundError(errorMessages.financial.accountNotFound);
+    }
+
+    const category = await this.categoriesRepo.findById(userId, nextCategoryId);
+    if (!category) {
+      throw new NotFoundError(errorMessages.financial.categoryNotFound);
+    }
+
+    if (existing.affects_balance) {
+      await this.accounts.adjustAmount(
+        userId,
+        existing.account_id,
+        -balanceDelta(existing.direction, Number(existing.amount)),
+      );
+    }
+
+    const row = await this.repo.update(userId, id, {
+      accountId: nextAccountId,
+      categoryId: nextCategoryId,
+      amount: nextAmount,
+      spentAt: nextSpentAt,
+      notes: nextNotes,
+      direction: nextDirection,
+      affectsBalance: nextAffectsBalance,
+    });
+
+    if (nextAffectsBalance) {
+      await this.accounts.adjustAmount(
+        userId,
+        nextAccountId,
+        balanceDelta(nextDirection, nextAmount),
+      );
+    }
+
+    return toPublicTransaction(row);
   }
 
   async delete(userId: string, id: string): Promise<void> {

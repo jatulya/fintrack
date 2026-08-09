@@ -14,12 +14,18 @@ import { accountsApi } from './accountsApi';
 import { categoriesApi } from './categoriesApi';
 import { transactionsApi } from './transactionsApi';
 import { recurringPaymentsApi } from './recurringPaymentsApi';
-import type { Account, CreateAccountInput } from '../models/accounts/types/accountTypes';
+import type { Account, CreateAccountInput, UpdateAccountInput } from '../models/accounts/types/accountTypes';
 import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
-import type { CreateTransactionInput, Transaction } from '../models/transactions/types/transactionTypes';
+import type {
+  CreateTransactionInput,
+  Transaction,
+  UpdateTransactionInput,
+  
+} from '../models/transactions/types/transactionTypes';
 import type {
   CreateRecurringPaymentInput,
   ProcessRecurringPaymentsResult,
+  UpdateRecurringPaymentInput,
   RecurringPayment,
 } from '../models/recurring/types/recurringTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
@@ -37,8 +43,12 @@ interface AppContextType {
   refreshFinancials: () => Promise<void>;
   createCategory: (input: CreateCategoryInput) => Promise<Category>;
   createAccount: (input: CreateAccountInput) => Promise<Account>;
+  updateAccount: (id: string, input: UpdateAccountInput) => Promise<Account>;
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
+  updateTransaction: (id: string, input: UpdateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
+  updateRecurringPayment: (id: string, input: UpdateRecurringPaymentInput) => Promise<RecurringPayment>;
+  deleteRecurringPayment: (id: string) => Promise<void>;
   processDueRecurringPayments: () => Promise<Pick<ProcessRecurringPaymentsResult, 'processedCount' | 'createdCount' | 'items'>>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
@@ -117,6 +127,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return account;
   }, []);
 
+  const updateAccount = useCallback(async (id: string, input: UpdateAccountInput): Promise<Account> => {
+    const result = await accountsApi.update(id, input);
+    const account = unwrapApiResult(result).account;
+    setAccounts((prev) => prev.map((item) => (item.id === id ? account : item)));
+    return account;
+  }, []);
+
   const createTransaction = useCallback(async (input: CreateTransactionInput): Promise<Transaction> => {
     const result = await transactionsApi.create(input);
     const transaction = unwrapApiResult(result).transaction;
@@ -138,6 +155,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return transaction;
   }, []);
 
+  const updateTransaction = useCallback(async (id: string, input: UpdateTransactionInput): Promise<Transaction> => {
+    const result = await transactionsApi.update(id, input);
+    const transaction = unwrapApiResult(result).transaction;
+    setTransactions((prev) => prev.map((item) => (item.id === id ? transaction : item)));
+    setTransactionsRevision((prev) => prev + 1);
+    // Balance adjustments can touch multiple stashes; reload authoritative amounts.
+    await refreshFinancials();
+    return transaction;
+  }, [refreshFinancials]);
+
   const createRecurringPayment = useCallback(async (input: CreateRecurringPaymentInput): Promise<RecurringPayment> => {
     const result = await recurringPaymentsApi.create(input);
     const recurringPayment = unwrapApiResult(result).recurringPayment;
@@ -148,6 +175,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return recurringPayment;
   }, [refreshFinancials]);
 
+  const updateRecurringPayment = useCallback(async (
+    id: string,
+    input: UpdateRecurringPaymentInput,
+  ): Promise<RecurringPayment> => {
+    const result = await recurringPaymentsApi.update(id, input);
+    const recurringPayment = unwrapApiResult(result).recurringPayment;
+    setRecurringPayments((prev) =>
+      prev.map((item) => (item.id === id ? recurringPayment : item)),
+    );
+    return recurringPayment;
+  }, []);
+
+  const deleteRecurringPayment = useCallback(async (id: string): Promise<void> => {
+    await unwrapApiResult(await recurringPaymentsApi.remove(id));
+    setRecurringPayments((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+  
   const processDueRecurringPayments = useCallback(async () => {
     const result = await recurringPaymentsApi.processDue();
     const data = unwrapApiResult(result);
@@ -193,8 +237,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshFinancials,
     createCategory,
     createAccount,
+    updateAccount,
     createTransaction,
+    updateTransaction,
     createRecurringPayment,
+    updateRecurringPayment,
+    deleteRecurringPayment,
     processDueRecurringPayments,
     deleteTransaction,
     goals,
@@ -214,8 +262,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     refreshFinancials,
     createCategory,
     createAccount,
+    updateAccount,
     createTransaction,
+    updateTransaction,
     createRecurringPayment,
+    updateRecurringPayment,
+    deleteRecurringPayment,
     processDueRecurringPayments,
     deleteTransaction,
     goals,

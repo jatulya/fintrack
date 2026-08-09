@@ -18,8 +18,11 @@ import {
   Plus,
   Repeat,
   Play,
+  Pencil,
+  Pause,
 } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
+import { ActionMenu } from '../../../common/components/ActionMenu';
 import { SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
 import { transactionsApi } from '../../../data/api/transactionsApi';
@@ -27,9 +30,12 @@ import { recurringPaymentsApi } from '../../../data/api/recurringPaymentsApi';
 import { unwrapApiResult } from '../../../modules/auth/types/authTypes';
 import type { Transaction, TransactionSortField } from '../../../data/models/transactions/types/transactionTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../../../data/models/transactions/types/transactionTypes';
+import type { RecurringPayment } from '../../../data/models/recurring/types/recurringTypes';
 import { strings } from '../../../common/texts/strings';
 import { ImportTransactionsModal } from './ImportTransactionsModal';
 import { AddRecurringPaymentModal } from './AddRecurringPaymentModal';
+import { EditRecurringPaymentModal } from './EditRecurringPaymentModal';
+import { EditTransactionModal } from './EditTransactionModal';
 import { ProcessDueResultModal } from './ProcessDueResultModal';
 import {
   RECURRING_FREQUENCY_LABELS,
@@ -46,6 +52,8 @@ export const TransactionsView: React.FC = () => {
     transactionsRevision,
     recurringPayments,
     processDueRecurringPayments,
+    updateRecurringPayment,
+    deleteRecurringPayment,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<PaymentsTab>('normal');
@@ -57,6 +65,9 @@ export const TransactionsView: React.FC = () => {
     ProcessRecurringPaymentsResult,
     'processedCount' | 'createdCount' | 'items'
   > | null>(null);
+  const [editingRecurring, setEditingRecurring] = useState<RecurringPayment | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [togglingRecurringId, setTogglingRecurringId] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -184,6 +195,37 @@ export const TransactionsView: React.FC = () => {
       setTransactions((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete transaction');
+    }
+  };
+
+  const handleToggleRecurring = async (payment: RecurringPayment) => {
+    const nextActive = !payment.isActive;
+    const actionLabel = nextActive ? 'resume' : 'pause';
+    if (!window.confirm(`Are you sure you want to ${actionLabel} this recurring payment?`)) return;
+
+    setTogglingRecurringId(payment.id);
+    try {
+      await updateRecurringPayment(payment.id, { isActive: nextActive });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : `Failed to ${actionLabel} recurring payment`);
+    } finally {
+      setTogglingRecurringId(null);
+    }
+  };
+
+  const handleDeleteRecurring = async (payment: RecurringPayment) => {
+    if (
+      !window.confirm(
+        'Delete this recurring payment? Past transactions will stay; nothing new will be added going forward.',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteRecurringPayment(payment.id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete recurring payment');
     }
   };
 
@@ -359,7 +401,7 @@ export const TransactionsView: React.FC = () => {
           </GlassCard>
 
           <GlassCard className="p-0 overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-visible">
               <table className="w-full border-collapse">
                 <thead className="bg-slate-50/50">
                   <tr>
@@ -368,7 +410,7 @@ export const TransactionsView: React.FC = () => {
                     <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Category</th>
                     <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Account</th>
                     <th className="p-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Amount</th>
-                    <th className="p-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Actions</th>
+                    <th className="p-4 w-12" aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -405,9 +447,24 @@ export const TransactionsView: React.FC = () => {
                               {t.direction === 'received' ? '+' : '-'}₹{t.amount.toLocaleString()}
                             </td>
                             <td className="p-4 text-center">
-                              <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg hover:bg-white text-slate-400 hover:text-decrease transition-colors">
-                                <Trash2 size={16} />
-                              </button>
+                              <ActionMenu
+                                ariaLabel={`Options for ${t.notes || 'transaction'}`}
+                                items={[
+                                  {
+                                    id: 'edit',
+                                    label: strings.editTransaction,
+                                    icon: Pencil,
+                                    onClick: () => setEditingTransaction(t),
+                                  },
+                                  {
+                                    id: 'delete',
+                                    label: strings.delete,
+                                    icon: Trash2,
+                                    danger: true,
+                                    onClick: () => void handleDelete(t.id),
+                                  },
+                                ]}
+                              />
                             </td>
                           </tr>
                         );
@@ -477,7 +534,7 @@ export const TransactionsView: React.FC = () => {
               {strings.recurringTransactions}
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-visible">
             <table className="w-full border-collapse">
               <thead className="bg-slate-50/50">
                 <tr>
@@ -486,19 +543,21 @@ export const TransactionsView: React.FC = () => {
                   <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Category</th>
                   <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Account</th>
                   <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">{strings.frequency}</th>
+                  <th className="p-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
                   <th className="p-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Amount</th>
+                  <th className="p-4 w-12" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recurringPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-12 text-center text-slate-400">
+                    <td colSpan={8} className="p-12 text-center text-slate-400">
                       No recurring payments yet. Add one to schedule automatic entries.
                     </td>
                   </tr>
                 ) : (
                   recurringPayments.map((payment) => (
-                    <tr key={payment.id} className="transaction-row">
+                    <tr key={payment.id} className={`transaction-row ${payment.isActive ? '' : 'opacity-60'}`}>
                       <td className="p-4 text-sm text-slate-600">{new Date(payment.nextRunAt).toLocaleDateString()}</td>
                       <td className="p-4">
                         <p className="text-sm font-semibold text-slate-800 m-0">{payment.notes || 'No notes'}</p>
@@ -514,8 +573,42 @@ export const TransactionsView: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-4 text-sm text-slate-600">{RECURRING_FREQUENCY_LABELS[payment.frequency]}</td>
+                      <td className="p-4">
+                        <span className={`inline-flex px-2 py-1 rounded-lg text-xs font-medium ${payment.isActive ? 'bg-accent-soft' : 'bg-slate-100 text-slate-500'}`}>
+                          {payment.isActive ? strings.active : strings.paused}
+                        </span>
+                      </td>
                       <td className={`p-4 text-right font-bold ${payment.direction === 'received' ? 'text-increase' : 'text-decrease'}`}>
                         {payment.direction === 'received' ? '+' : '-'}₹{payment.amount.toLocaleString()}
+                      </td>
+                      <td className="p-4 text-center">
+                        <ActionMenu
+                          ariaLabel={`Options for ${payment.notes || 'recurring payment'}`}
+                          items={[
+                            {
+                              id: 'edit',
+                              label: strings.editRecurringPayment,
+                              icon: Pencil,
+                              onClick: () => setEditingRecurring(payment),
+                            },
+                            {
+                              id: 'toggle',
+                              label: payment.isActive
+                                ? strings.pauseRecurringPayment
+                                : strings.resumeRecurringPayment,
+                              icon: payment.isActive ? Pause : Play,
+                              disabled: togglingRecurringId === payment.id,
+                              onClick: () => void handleToggleRecurring(payment),
+                            },
+                            {
+                              id: 'delete',
+                              label: strings.deleteRecurringPayment,
+                              icon: Trash2,
+                              danger: true,
+                              onClick: () => void handleDeleteRecurring(payment),
+                            },
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))
@@ -535,6 +628,25 @@ export const TransactionsView: React.FC = () => {
 
       {showAddRecurringModal && (
         <AddRecurringPaymentModal onClose={() => setShowAddRecurringModal(false)} />
+      )}
+
+      {editingRecurring && (
+        <EditRecurringPaymentModal
+          payment={editingRecurring}
+          onClose={() => setEditingRecurring(null)}
+        />
+      )}
+
+      {editingTransaction && (
+        <EditTransactionModal
+          transaction={editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onUpdated={(updated) => {
+            setTransactions((prev) =>
+              prev.map((item) => (item.id === updated.id ? updated : item)),
+            );
+          }}
+        />
       )}
 
       {processResult && (

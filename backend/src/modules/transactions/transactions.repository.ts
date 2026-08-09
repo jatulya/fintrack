@@ -122,6 +122,41 @@ export class TransactionsRepository {
     if (error) throw error;
   }
 
+  async update(
+    userId: string,
+    id: string,
+    input: {
+      accountId: string;
+      categoryId: string;
+      amount: number;
+      spentAt: string;
+      notes: string;
+      direction: string;
+      affectsBalance: boolean;
+    },
+  ): Promise<TransactionWithCategory> {
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .update({
+        account_id: input.accountId,
+        category_id: input.categoryId,
+        amount: input.amount,
+        spent_at: input.spentAt,
+        notes: input.notes,
+        direction: input.direction,
+        affects_balance: input.affectsBalance,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .select('*, categories(name, label)')
+      .single();
+
+    if (error) throw error;
+    return data as TransactionWithCategory;
+  }
+
   async findAllWithCategoryForUser(userId: string): Promise<TransactionWithCategory[]> {
     const pageSize = 1000;
     let offset = 0;

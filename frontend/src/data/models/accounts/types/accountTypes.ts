@@ -12,3 +12,9 @@ export interface CreateAccountInput {
   amount?: number;
   notes?: string;
 }
+
+export interface UpdateAccountInput {
+  name?: string;
+  amount?: number;
+  notes?: string;
+}

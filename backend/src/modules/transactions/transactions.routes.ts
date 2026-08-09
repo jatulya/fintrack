@@ -8,6 +8,7 @@ import {
   listTransactionsValidation,
   importJobIdParam,
   transactionIdParam,
+  updateTransactionValidation,
 } from './transactions.validation.js';
 
 export const transactionsRouter = Router();
@@ -21,4 +22,5 @@ transactionsRouter.post('/import', uploadTransactionExcel, transactionsControlle
 transactionsRouter.get('/import/:jobId', importJobIdParam, validateRequest, transactionsController.getImportStatus);
 
 transactionsRouter.post('/', createTransactionValidation, validateRequest, transactionsController.create);
+transactionsRouter.patch('/:id', updateTransactionValidation, validateRequest, transactionsController.update);
 transactionsRouter.delete('/:id', transactionIdParam, validateRequest, transactionsController.remove);

@@ -19,6 +19,15 @@ export class AccountsController {
       next(err);
     }
   };
+
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const account = await accountsService.update(req.user!.sub, req.params.id as string, req.body);
+      res.json({ success: true, data: { account } });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const accountsController = new AccountsController();

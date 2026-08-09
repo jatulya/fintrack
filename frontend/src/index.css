@@ -246,23 +246,32 @@
   }
 
   .glass-icon-btn,
-  .clay-surface-icon {
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    background: var(--glass-button-bg);
-    border: 1px solid var(--glass-button-border);
+  .clay-surface-icon,
+  .icon-action-btn {
+    background: color-mix(in srgb, var(--clay-bg) 88%, white);
+    border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
     box-shadow:
-      inset 0 1px 0 var(--glass-button-highlight),
-      inset 0 -1px 0 color-mix(in srgb, var(--accent) 8%, transparent),
-      var(--glass-button-shadow);
-    @apply w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all shrink-0 p-0;
+      inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+      0 2px 8px color-mix(in srgb, var(--accent) 10%, transparent);
+    @apply w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all shrink-0 p-0;
     color: var(--text-secondary);
   }
 
   .glass-icon-btn:hover,
-  .clay-surface-icon:hover {
-    background: color-mix(in srgb, var(--primary) 68%, transparent);
+  .clay-surface-icon:hover,
+  .icon-action-btn:hover {
+    background: color-mix(in srgb, var(--accent) 14%, white);
     color: var(--text-primary);
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+
+  .glass-icon-btn:active,
+  .clay-surface-icon:active,
+  .icon-action-btn:active,
+  .icon-action-btn[aria-expanded='true'] {
+    background: color-mix(in srgb, var(--accent) 20%, white);
+    color: var(--accent);
+    box-shadow: inset 0 1px 2px color-mix(in srgb, var(--accent) 16%, transparent);
   }
 
   /* ── Claymorphic cards ── */
@@ -681,8 +690,56 @@
     @apply flex flex-col gap-0.5 flex-1 min-w-0;
   }
 
-  .stash-card-menu {
-    @apply p-0;
+  .stash-card-menu-wrap {
+    @apply relative shrink-0;
+  }
+
+  .action-menu {
+    @apply relative inline-flex shrink-0;
+  }
+
+  .action-menu-dropdown,
+  .stash-card-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 30;
+    min-width: 168px;
+    padding: 0.35rem;
+    border-radius: 0.85rem;
+    background: var(--clay-bg);
+    box-shadow: var(--clay-card-inset), var(--clay-card-outer);
+    border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+
+  .action-menu-dropdown-left {
+    right: auto;
+    left: 0;
+  }
+
+  .action-menu-item,
+  .stash-card-dropdown-item {
+    @apply w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border-none cursor-pointer;
+    background: transparent;
+    color: var(--text-primary);
+  }
+
+  .action-menu-item:hover,
+  .stash-card-dropdown-item:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .action-menu-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .action-menu-item-danger {
+    color: var(--error, #d6456c);
+  }
+
+  .action-menu-item-danger:hover {
+    background: color-mix(in srgb, var(--error, #d6456c) 12%, transparent);
   }
 
   .stash-card-name {
