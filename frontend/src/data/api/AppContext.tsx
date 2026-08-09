@@ -18,7 +18,11 @@ import { goalsApi } from './goalsApi';
 import type { Account, CreateAccountInput } from '../models/accounts/types/accountTypes';
 import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
 import type { CreateTransactionInput, Transaction } from '../models/transactions/types/transactionTypes';
-import type { CreateRecurringPaymentInput, RecurringPayment } from '../models/recurring/types/recurringTypes';
+import type {
+  CreateRecurringPaymentInput,
+  ProcessRecurringPaymentsResult,
+  RecurringPayment,
+} from '../models/recurring/types/recurringTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
 import type {
   CreateGoalInput,
@@ -49,6 +53,7 @@ interface AppContextType {
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
   createGoal: (input: CreateGoalInput) => Promise<SavingsGoal>;
+  processDueRecurringPayments: () => Promise<Pick<ProcessRecurringPaymentsResult, 'processedCount' | 'createdCount' | 'items'>>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
   goalMetrics: GoalsPoolMetrics;
@@ -91,6 +96,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCategories(unwrapApiResult(categoriesResult).categories);
       setAccounts(unwrapApiResult(accountsResult).accounts);
       setTransactions(unwrapApiResult(transactionsResult).transactions);
+      setTransactionsRevision((prev) => prev + 1);
       setRecurringPayments(unwrapApiResult(recurringResult).recurringPayments);
       const goalsData = unwrapApiResult(goalsResult);
       setGoals(goalsData.goals);
@@ -160,7 +166,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Backfilled past occurrences update transactions and possibly stash balances.
     await refreshFinancials();
-    setTransactionsRevision((prev) => prev + 1);
 
     return recurringPayment;
   }, [refreshFinancials]);
@@ -174,11 +179,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setGoalMetrics(listData.metrics);
     return goal;
   }, []);
+  
+  const processDueRecurringPayments = useCallback(async () => {
+    const result = await recurringPaymentsApi.processDue();
+    const data = unwrapApiResult(result);
+    setRecurringPayments(data.recurringPayments);
+    if (data.createdCount > 0) {
+      await refreshFinancials();
+    }
+    return {
+      processedCount: data.processedCount,
+      createdCount: data.createdCount,
+      items: data.items ?? [],
+    };
+  }, [refreshFinancials]);
 
   const deleteTransaction = useCallback(async (id: string): Promise<void> => {
     const existing = transactions.find((t) => t.id === id);
     await unwrapApiResult(await transactionsApi.remove(id));
     setTransactions((prev) => prev.filter((t) => t.id !== id));
+    setTransactionsRevision((prev) => prev + 1);
 
     if (existing?.affectsBalance) {
       const delta = existing.direction === 'received'
@@ -208,6 +228,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createTransaction,
     createRecurringPayment,
     createGoal,
+    processDueRecurringPayments,
     deleteTransaction,
     goals,
     goalMetrics,
@@ -229,6 +250,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createTransaction,
     createRecurringPayment,
     createGoal,
+    processDueRecurringPayments,
     deleteTransaction,
     goals,
     goalMetrics,

@@ -8,6 +8,11 @@ interface BalanceSummaryCardProps {
   footer: ReactNode;
 }
 
+function formatChangePercent(changePercent: number): string {
+  const sign = changePercent > 0 ? '+' : '';
+  return `${sign}${changePercent}% vs last month`;
+}
+
 export const BalanceSummaryCard = ({ title, amount, icon: Icon, footer }: BalanceSummaryCardProps) => (
   <article className="balance-summary-card">
     <div className="balance-summary-card-pattern" aria-hidden="true" />
@@ -27,23 +32,51 @@ export const BalanceSummaryCard = ({ title, amount, icon: Icon, footer }: Balanc
   </article>
 );
 
-export const SavingsSummaryCard = ({ amount }: { amount: number }) => (
+export const SavingsSummaryCard = ({
+  amount,
+  changePercent,
+}: {
+  amount: number;
+  changePercent: number;
+}) => (
   <BalanceSummaryCard
     title="Your Savings"
     amount={amount}
     icon={PiggyBank}
-    footer={<span className="balance-summary-card-meta">This month</span>}
+    footer={
+      <span
+        className={`balance-summary-card-meta ${
+          changePercent >= 0
+            ? 'balance-summary-card-meta-positive'
+            : 'balance-summary-card-meta-negative'
+        }`}
+      >
+        {formatChangePercent(changePercent)}
+      </span>
+    }
   />
 );
 
-export const InvestmentSummaryCard = ({ amount, roiPercent }: { amount: number; roiPercent: number }) => (
+export const InvestmentSummaryCard = ({
+  amount,
+  changePercent,
+}: {
+  amount: number;
+  changePercent: number;
+}) => (
   <BalanceSummaryCard
     title="Your Investment"
     amount={amount}
     icon={Gem}
     footer={
-      <span className="balance-summary-card-meta">
-        ROI {roiPercent >= 0 ? '+' : ''}{roiPercent}%
+      <span
+        className={`balance-summary-card-meta ${
+          changePercent >= 0
+            ? 'balance-summary-card-meta-positive'
+            : 'balance-summary-card-meta-negative'
+        }`}
+      >
+        {formatChangePercent(changePercent)}
       </span>
     }
   />
