@@ -50,6 +50,29 @@ export interface PublicRecurringPayment {
   updatedAt: string;
 }
 
+export type ProcessRecurringPaymentItemStatus = 'created' | 'skipped' | 'partial' | 'failed';
+
+export interface ProcessRecurringPaymentItem {
+  recurringPaymentId: string;
+  notes: string;
+  amount: number;
+  direction: RecurringPaymentDirection;
+  accountName: string;
+  categoryLabel: string;
+  createdCount: number;
+  skippedCount: number;
+  status: ProcessRecurringPaymentItemStatus;
+  /** Why nothing (or not everything) was created; null when fully created. */
+  reason: string | null;
+}
+
+export interface ProcessRecurringPaymentsResult {
+  processedCount: number;
+  createdCount: number;
+  items: ProcessRecurringPaymentItem[];
+  recurringPayments: PublicRecurringPayment[];
+}
+
 export interface CreateRecurringPaymentInput extends MoneyEntryFields {
   frequency: RecurringPaymentFrequency;
   startDate: string;

@@ -22,6 +22,10 @@ export const listTransactionsValidation = [
     .optional()
     .isUUID()
     .withMessage('A valid account ID is required'),
+  query('categoryId')
+    .optional()
+    .isUUID()
+    .withMessage('A valid category ID is required'),
   query('search')
     .optional()
     .trim()

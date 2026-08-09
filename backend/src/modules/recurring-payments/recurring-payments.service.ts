@@ -7,10 +7,12 @@ import {
   formatDateOnly,
   parseDateOnly,
   todayDateOnly,
+  collectDueDates
 } from './recurring-schedule.js';
 import { transactionsRepository } from '../transactions/transactions.repository.js';
 import type {
   CreateRecurringPaymentInput,
+  ProcessRecurringPaymentsResult,
   PublicRecurringPayment,
   RecurringPaymentFrequency,
   RecurringPaymentWithRelations,
@@ -63,6 +65,22 @@ function advanceToFuture(
 
   return formatDateOnly(cursor);
 }
+/** Prefer PostgREST/Supabase fields; fall back to Error.message. */
+function getSupabaseErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object') {
+    const maybe = err as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const parts = [maybe.message, maybe.details, maybe.hint]
+      .filter((part): part is string => typeof part === 'string' && part.length > 0);
+    if (parts.length > 0) {
+      const code = typeof maybe.code === 'string' && maybe.code ? ` (${maybe.code})` : '';
+      return `${parts.join(' — ')}${code}`;
+    }
+  }
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return String(err);
+}
 
 export class RecurringPaymentsService {
   constructor(
@@ -75,6 +93,10 @@ export class RecurringPaymentsService {
   async list(userId: string): Promise<PublicRecurringPayment[]> {
     const rows = await this.repo.findAllByUser(userId);
     return rows.map(toPublicRecurringPayment);
+  }
+
+  async getDueCount(userId: string): Promise<number> {
+    return this.repo.countActiveDueByUser(userId, todayDateOnly());
   }
 
   async create(userId: string, input: CreateRecurringPaymentInput): Promise<PublicRecurringPayment> {
@@ -189,6 +211,97 @@ export class RecurringPaymentsService {
     }
 
     await this.repo.softDelete(userId, id);
+  }
+  //  * Creates missing transactions for active recurring payments whose next run
+  //  * is on or before today (manual stand-in for a cron job).
+  //  * Only advances next_payment_date when transactions are created successfully.
+  //  */
+  async processDue(userId: string): Promise<ProcessRecurringPaymentsResult> {
+    const today = todayDateOnly();
+    const duePayments = await this.repo.findActiveDueByUser(userId, today);
+
+    let createdCount = 0;
+    const items: ProcessRecurringPaymentsResult['items'] = [];
+
+    for (const payment of duePayments) {
+      const accountName = payment.accounts?.name ?? 'Unknown';
+      const categoryLabel = payment.categories?.label ?? 'Unknown';
+      const baseItem = {
+        recurringPaymentId: payment.id,
+        notes: payment.notes,
+        amount: Number(payment.amount),
+        direction: payment.direction,
+        accountName,
+        categoryLabel,
+      };
+
+      try {
+        const { dueDates, nextPaymentDate } = collectDueDates(
+          payment.next_payment_date,
+          payment.frequency,
+          today,
+        );
+
+        if (dueDates.length === 0) {
+          continue;
+        }
+
+        const transactionInputs: CreateTransactionInput[] = dueDates.map((spentAt) => ({
+          accountId: payment.account_id,
+          categoryId: payment.category_id,
+          amount: Number(payment.amount),
+          spentAt,
+          notes: payment.notes,
+          direction: payment.direction,
+          affectsBalance: payment.affects_balance,
+        }));
+
+        await this.transactionsRepo.createMany(userId, transactionInputs);
+        await this.repo.updateNextPaymentDate(userId, payment.id, nextPaymentDate);
+        createdCount += dueDates.length;
+
+        try {
+          if (payment.affects_balance) {
+            const totalDelta =
+              balanceDelta(payment.direction, Number(payment.amount)) * dueDates.length;
+            await this.accounts.adjustAmount(userId, payment.account_id, totalDelta);
+          }
+
+          items.push({
+            ...baseItem,
+            createdCount: dueDates.length,
+            skippedCount: 0,
+            status: 'created',
+            reason: null,
+          });
+        } catch (balanceErr) {
+          items.push({
+            ...baseItem,
+            createdCount: dueDates.length,
+            skippedCount: 0,
+            status: 'partial',
+            reason: getSupabaseErrorMessage(balanceErr),
+          });
+        }
+      } catch (err) {
+        items.push({
+          ...baseItem,
+          createdCount: 0,
+          skippedCount: 0,
+          status: 'failed',
+          reason: getSupabaseErrorMessage(err),
+        });
+      }
+    }
+
+    const recurringPayments = await this.list(userId);
+
+    return {
+      processedCount: duePayments.length,
+      createdCount,
+      items,
+      recurringPayments,
+    };
   }
 }
 

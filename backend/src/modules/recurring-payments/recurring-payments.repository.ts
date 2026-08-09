@@ -38,6 +38,36 @@ export class RecurringPaymentsRepository {
     if (error) throw error;
     return data as RecurringPaymentWithRelations | null;
   }
+  
+  async findActiveDueByUser(
+    userId: string,
+    asOfDate: string,
+  ): Promise<RecurringPaymentWithRelations[]> {
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .select("*, categories(name, label), accounts(name)")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .is("deleted_at", null)
+      .lte("next_payment_date", asOfDate)
+      .order("next_payment_date", { ascending: true });
+
+    if (error) throw error;
+    return (data ?? []) as RecurringPaymentWithRelations[];
+  }
+
+  async countActiveDueByUser(userId: string, asOfDate: string): Promise<number> {
+    const { count, error } = await supabaseAdmin
+      .from(TABLE)
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .is("deleted_at", null)
+      .lte("next_payment_date", asOfDate);
+
+    if (error) throw error;
+    return count ?? 0;
+  }
 
   async create(
     userId: string,

@@ -43,6 +43,34 @@ export interface RecurringScheduleResult {
 }
 
 /**
+ * Collects due occurrence dates from `fromDate` through today (inclusive).
+ * Returns an empty list when `fromDate` is in the future.
+ */
+export function collectDueDates(
+  fromDate: string,
+  frequency: RecurringPaymentFrequency,
+  today: string = todayDateOnly(),
+): { dueDates: string[]; nextPaymentDate: string } {
+  const todayDate = parseDateOnly(today);
+  let cursor = parseDateOnly(fromDate);
+
+  if (cursor > todayDate) {
+    return { dueDates: [], nextPaymentDate: fromDate };
+  }
+
+  const dueDates: string[] = [];
+  while (cursor <= todayDate && dueDates.length < MAX_BACKFILL_OCCURRENCES) {
+    dueDates.push(formatDateOnly(cursor));
+    cursor = addFrequency(cursor, frequency);
+  }
+
+  return {
+    dueDates,
+    nextPaymentDate: formatDateOnly(cursor),
+  };
+}
+
+/**
  * Builds the schedule for a recurring payment.
  * - Past/today dates become transactions.
  * - nextPaymentDate is the first date after today.
@@ -53,21 +81,9 @@ export function buildRecurringSchedule(
   frequency: RecurringPaymentFrequency,
   today: string = todayDateOnly(),
 ): RecurringScheduleResult {
-  const todayDate = parseDateOnly(today);
-  let cursor = parseDateOnly(startDate);
-
-  if (cursor > todayDate) {
-    return { pastDates: [], nextPaymentDate: startDate };
-  }
-
-  const pastDates: string[] = [];
-  while (cursor <= todayDate && pastDates.length < MAX_BACKFILL_OCCURRENCES) {
-    pastDates.push(formatDateOnly(cursor));
-    cursor = addFrequency(cursor, frequency);
-  }
-
+  const { dueDates, nextPaymentDate } = collectDueDates(startDate, frequency, today);
   return {
-    pastDates,
-    nextPaymentDate: formatDateOnly(cursor),
+    pastDates: dueDates,
+    nextPaymentDate,
   };
 }

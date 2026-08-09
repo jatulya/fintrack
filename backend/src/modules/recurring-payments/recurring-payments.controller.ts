@@ -11,6 +11,15 @@ export class RecurringPaymentsController {
     }
   };
 
+  dueCount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const dueCount = await recurringPaymentsService.getDueCount(req.user!.sub);
+      res.json({ success: true, data: { dueCount } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const recurringPayment = await recurringPaymentsService.create(req.user!.sub, req.body);
@@ -37,6 +46,15 @@ export class RecurringPaymentsController {
     try {
       await recurringPaymentsService.delete(req.user!.sub, req.params.id as string);
       res.json({ success: true, data: { message: 'Recurring payment deleted' } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  processDue = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await recurringPaymentsService.processDue(req.user!.sub);
+      res.json({ success: true, data: result });
     } catch (err) {
       next(err);
     }

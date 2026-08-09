@@ -2,6 +2,7 @@ import { httpClient } from '../../modules/auth/api/httpClient';
 import type { ApiResult } from '../../modules/auth/types/authTypes';
 import type {
   CreateRecurringPaymentInput,
+  ProcessRecurringPaymentsResult,
   RecurringPayment,
   UpdateRecurringPaymentInput,
 } from '../models/recurring/types/recurringTypes';
@@ -29,5 +30,15 @@ export const recurringPaymentsApi = {
     return httpClient<ApiResult<{ message: string }>>(`/recurring-payments/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  processDue() {
+    return httpClient<ApiResult<ProcessRecurringPaymentsResult>>('/recurring-payments/process-due', {
+      method: 'POST',
+    });
+  },
+
+  dueCount() {
+    return httpClient<ApiResult<{ dueCount: number }>>('/recurring-payments/due-count');
   },
 };

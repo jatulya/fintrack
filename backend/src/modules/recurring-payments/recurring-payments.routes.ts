@@ -13,6 +13,8 @@ export const recurringPaymentsRouter = Router();
 recurringPaymentsRouter.use(authenticate);
 
 recurringPaymentsRouter.get('/', recurringPaymentsController.list);
+recurringPaymentsRouter.get('/due-count', recurringPaymentsController.dueCount);
 recurringPaymentsRouter.post('/', createRecurringPaymentValidation, validateRequest, recurringPaymentsController.create);
 recurringPaymentsRouter.patch('/:id', updateRecurringPaymentValidation, validateRequest, recurringPaymentsController.update);
 recurringPaymentsRouter.delete('/:id', recurringPaymentIdParam, validateRequest, recurringPaymentsController.remove);
+recurringPaymentsRouter.post('/process-due', recurringPaymentsController.processDue);

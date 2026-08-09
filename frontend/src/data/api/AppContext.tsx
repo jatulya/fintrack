@@ -20,11 +20,13 @@ import type {
   CreateTransactionInput,
   Transaction,
   UpdateTransactionInput,
+  
 } from '../models/transactions/types/transactionTypes';
 import type {
   CreateRecurringPaymentInput,
-  RecurringPayment,
+  ProcessRecurringPaymentsResult,
   UpdateRecurringPaymentInput,
+  RecurringPayment,
 } from '../models/recurring/types/recurringTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
 import { SavingsGoal, Investment } from '../models/goals/types/goalTypes';
@@ -47,6 +49,7 @@ interface AppContextType {
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
   updateRecurringPayment: (id: string, input: UpdateRecurringPaymentInput) => Promise<RecurringPayment>;
   deleteRecurringPayment: (id: string) => Promise<void>;
+  processDueRecurringPayments: () => Promise<Pick<ProcessRecurringPaymentsResult, 'processedCount' | 'createdCount' | 'items'>>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
   setGoals: (goals: SavingsGoal[]) => void;
@@ -86,6 +89,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCategories(unwrapApiResult(categoriesResult).categories);
       setAccounts(unwrapApiResult(accountsResult).accounts);
       setTransactions(unwrapApiResult(transactionsResult).transactions);
+      setTransactionsRevision((prev) => prev + 1);
       setRecurringPayments(unwrapApiResult(recurringResult).recurringPayments);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load financial data');
@@ -167,7 +171,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Backfilled past occurrences update transactions and possibly stash balances.
     await refreshFinancials();
-    setTransactionsRevision((prev) => prev + 1);
 
     return recurringPayment;
   }, [refreshFinancials]);
@@ -188,11 +191,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await unwrapApiResult(await recurringPaymentsApi.remove(id));
     setRecurringPayments((prev) => prev.filter((item) => item.id !== id));
   }, []);
+  
+  const processDueRecurringPayments = useCallback(async () => {
+    const result = await recurringPaymentsApi.processDue();
+    const data = unwrapApiResult(result);
+    setRecurringPayments(data.recurringPayments);
+    if (data.createdCount > 0) {
+      await refreshFinancials();
+    }
+    return {
+      processedCount: data.processedCount,
+      createdCount: data.createdCount,
+      items: data.items ?? [],
+    };
+  }, [refreshFinancials]);
 
   const deleteTransaction = useCallback(async (id: string): Promise<void> => {
     const existing = transactions.find((t) => t.id === id);
     await unwrapApiResult(await transactionsApi.remove(id));
     setTransactions((prev) => prev.filter((t) => t.id !== id));
+    setTransactionsRevision((prev) => prev + 1);
 
     if (existing?.affectsBalance) {
       const delta = existing.direction === 'received'
@@ -225,6 +243,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createRecurringPayment,
     updateRecurringPayment,
     deleteRecurringPayment,
+    processDueRecurringPayments,
     deleteTransaction,
     goals,
     setGoals,
@@ -249,6 +268,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createRecurringPayment,
     updateRecurringPayment,
     deleteRecurringPayment,
+    processDueRecurringPayments,
     deleteTransaction,
     goals,
     setGoals,

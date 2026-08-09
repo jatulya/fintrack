@@ -1,20 +1,44 @@
+import { useEffect, useState } from 'react';
 import { strings } from '../../common/texts/strings';
 import { useApp } from '../../data/api/AppContext';
-import { splitAccountsByBucket } from './accountBuckets';
+import { dashboardApi } from '../../data/api/dashboardApi';
+import { unwrapApiResult } from '../auth/types/authTypes';
+import type { DashboardSummary } from '../../data/models/dashboard/types/dashboardTypes';
 import { InvestmentSummaryCard, SavingsSummaryCard } from './BalanceSummaryCard';
-import { calculateMonthlySavingsRate } from './savingsRate';
+
+const EMPTY_SUMMARY: DashboardSummary = {
+  savings: { amount: 0, changePercent: 0 },
+  investments: { amount: 0, changePercent: 0 },
+  savingsRate: 0,
+};
 
 export const TotalBalanceBanner = () => {
-  const { accounts, transactions } = useApp();
+  const { accounts, transactionsRevision } = useApp();
+  const [summary, setSummary] = useState<DashboardSummary>(EMPTY_SUMMARY);
 
   const totalBalance = accounts.reduce((acc, curr) => acc + curr.amount, 0);
-  const { savingsTotal, investmentTotal } = splitAccountsByBucket(accounts);
-  const savingsRate = calculateMonthlySavingsRate(transactions);
-  const isHealthySavings = savingsRate > 20;
+  const isHealthySavings = summary.savingsRate > 20;
 
-  const investmentRoi = investmentTotal > 0 && totalBalance > 0
-    ? Math.round((investmentTotal / totalBalance) * 100) / 10
-    : 0;
+  useEffect(() => {
+    let cancelled = false;
+
+    dashboardApi
+      .getSummary()
+      .then((result) => {
+        if (!cancelled) {
+          setSummary(unwrapApiResult(result).summary);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSummary(EMPTY_SUMMARY);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [transactionsRevision]);
 
   return (
     <section className="total-balance-banner">
@@ -27,13 +51,19 @@ export const TotalBalanceBanner = () => {
           <span
             className={`total-balance-savings-badge ${isHealthySavings ? 'total-balance-savings-badge-positive' : 'total-balance-savings-badge-error'}`}
           >
-            {savingsRate}% {strings.savingsRateLabel}
+            {summary.savingsRate}% {strings.savingsRateLabel}
           </span>
         </div>
 
         <div className="total-balance-summary-cards">
-          <SavingsSummaryCard amount={savingsTotal} />
-          <InvestmentSummaryCard amount={investmentTotal} roiPercent={investmentRoi} />
+          <SavingsSummaryCard
+            amount={summary.savings.amount}
+            changePercent={summary.savings.changePercent}
+          />
+          <InvestmentSummaryCard
+            amount={summary.investments.amount}
+            changePercent={summary.investments.changePercent}
+          />
         </div>
       </div>
     </section>

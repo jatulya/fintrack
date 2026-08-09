@@ -63,6 +63,7 @@ export interface ListTransactionsQuery {
   offset: number;
   direction?: TransactionDirection;
   accountId?: string;
+  categoryId?: string;
   search?: string;
   sortBy: TransactionSortField;
   sortOrder: 'asc' | 'desc';
