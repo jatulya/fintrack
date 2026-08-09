@@ -23,13 +23,18 @@ import { GlassCard } from '../../../common/components/GlassCard';
 import { SelectField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
 import { transactionsApi } from '../../../data/api/transactionsApi';
+import { recurringPaymentsApi } from '../../../data/api/recurringPaymentsApi';
 import { unwrapApiResult } from '../../../modules/auth/types/authTypes';
 import type { Transaction, TransactionSortField } from '../../../data/models/transactions/types/transactionTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../../../data/models/transactions/types/transactionTypes';
 import { strings } from '../../../common/texts/strings';
 import { ImportTransactionsModal } from './ImportTransactionsModal';
 import { AddRecurringPaymentModal } from './AddRecurringPaymentModal';
-import { RECURRING_FREQUENCY_LABELS } from '../../../data/models/recurring/types/recurringTypes';
+import { ProcessDueResultModal } from './ProcessDueResultModal';
+import {
+  RECURRING_FREQUENCY_LABELS,
+  type ProcessRecurringPaymentsResult,
+} from '../../../data/models/recurring/types/recurringTypes';
 
 type PaymentsTab = 'normal' | 'recurring';
 
@@ -47,7 +52,11 @@ export const TransactionsView: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddRecurringModal, setShowAddRecurringModal] = useState(false);
   const [isProcessingDue, setIsProcessingDue] = useState(false);
-  const [processMessage, setProcessMessage] = useState<string | null>(null);
+  const [dueCount, setDueCount] = useState(0);
+  const [processResult, setProcessResult] = useState<Pick<
+    ProcessRecurringPaymentsResult,
+    'processedCount' | 'createdCount' | 'items'
+  > | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -145,6 +154,20 @@ export const TransactionsView: React.FC = () => {
     return () => observer.disconnect();
   }, [fetchPage, hasMore, isLoading, isLoadingMore, activeTab]);
 
+  const fetchDueCount = useCallback(async () => {
+    try {
+      const result = await recurringPaymentsApi.dueCount();
+      setDueCount(unwrapApiResult(result).dueCount);
+    } catch {
+      setDueCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'recurring') return;
+    void fetchDueCount();
+  }, [activeTab, recurringPayments, fetchDueCount]);
+
   const toggleSort = (field: TransactionSortField) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -166,20 +189,29 @@ export const TransactionsView: React.FC = () => {
 
   const handleProcessDue = async () => {
     setIsProcessingDue(true);
-    setProcessMessage(null);
     try {
       const result = await processDueRecurringPayments();
-      if (result.createdCount > 0) {
-        setProcessMessage(
-          `Created ${result.createdCount} transaction${result.createdCount === 1 ? '' : 's'} from ${result.processedCount} due payment${result.processedCount === 1 ? '' : 's'}.`,
-        );
-      } else if (result.processedCount > 0) {
-        setProcessMessage('Due payments were already up to date — no new transactions created.');
-      } else {
-        setProcessMessage('No recurring payments are due right now.');
-      }
+      setProcessResult(result);
+      await fetchDueCount();
     } catch (err) {
-      setProcessMessage(err instanceof Error ? err.message : 'Failed to process due payments');
+      setProcessResult({
+        processedCount: 0,
+        createdCount: 0,
+        items: [
+          {
+            recurringPaymentId: 'error',
+            notes: '',
+            amount: 0,
+            direction: 'spent',
+            accountName: '',
+            categoryLabel: 'Run failed',
+            createdCount: 0,
+            skippedCount: 0,
+            status: 'failed',
+            reason: err instanceof Error ? err.message : 'Failed to process due payments',
+          },
+        ],
+      });
     } finally {
       setIsProcessingDue(false);
     }
@@ -218,7 +250,7 @@ export const TransactionsView: React.FC = () => {
             <>
               <button
                 type="button"
-                className="glass-btn glass-btn-sm flex items-center gap-2"
+                className="glass-btn glass-btn-sm relative flex items-center gap-2"
                 onClick={() => void handleProcessDue()}
                 disabled={isProcessingDue}
               >
@@ -228,6 +260,14 @@ export const TransactionsView: React.FC = () => {
                   <Play size={18} className="text-accent" />
                 )}
                 <span>{strings.processDueRecurring}</span>
+                {dueCount > 0 && (
+                  <span
+                    className="absolute -top-1.5 -right-1.5 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold leading-5 text-center"
+                    aria-label={`${dueCount} due`}
+                  >
+                    {dueCount}
+                  </span>
+                )}
               </button>
               <button
                 type="button"
@@ -258,10 +298,6 @@ export const TransactionsView: React.FC = () => {
           )}
         </div>
       </div>
-
-      {activeTab === 'recurring' && processMessage && (
-        <p className="text-sm text-slate-600 mb-4 m-0">{processMessage}</p>
-      )}
 
       {activeTab === 'normal' && (
         <>
@@ -499,6 +535,13 @@ export const TransactionsView: React.FC = () => {
 
       {showAddRecurringModal && (
         <AddRecurringPaymentModal onClose={() => setShowAddRecurringModal(false)} />
+      )}
+
+      {processResult && (
+        <ProcessDueResultModal
+          result={processResult}
+          onClose={() => setProcessResult(null)}
+        />
       )}
     </div>
   );

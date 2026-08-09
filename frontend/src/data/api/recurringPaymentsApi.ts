@@ -23,4 +23,8 @@ export const recurringPaymentsApi = {
       method: 'POST',
     });
   },
+
+  dueCount() {
+    return httpClient<ApiResult<{ dueCount: number }>>('/recurring-payments/due-count');
+  },
 };

@@ -11,6 +11,15 @@ export class RecurringPaymentsController {
     }
   };
 
+  dueCount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const dueCount = await recurringPaymentsService.getDueCount(req.user!.sub);
+      res.json({ success: true, data: { dueCount } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const recurringPayment = await recurringPaymentsService.create(req.user!.sub, req.body);

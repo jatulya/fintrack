@@ -122,55 +122,6 @@ export class TransactionsRepository {
     if (error) throw error;
   }
 
-  /**
-   * Returns date-only spent_at values that already have a matching transaction
-   * for the given recurring fingerprint (account, category, amount, direction).
-   */
-  async findExistingOccurrenceDates(
-    userId: string,
-    input: {
-      accountId: string;
-      categoryId: string;
-      amount: number;
-      direction: 'received' | 'spent';
-      spentAts: string[];
-    },
-  ): Promise<Set<string>> {
-    if (input.spentAts.length === 0) {
-      return new Set();
-    }
-
-    const sortedDates = [...input.spentAts].sort();
-    const minDate = sortedDates[0];
-    const maxDate = sortedDates[sortedDates.length - 1];
-
-    const { data, error } = await supabaseAdmin
-      .from(TABLE)
-      .select('spent_at')
-      .eq('user_id', userId)
-      .eq('account_id', input.accountId)
-      .eq('category_id', input.categoryId)
-      .eq('amount', input.amount)
-      .eq('direction', input.direction)
-      .is('deleted_at', null)
-      .gte('spent_at', minDate)
-      .lte('spent_at', `${maxDate}T23:59:59.999Z`);
-
-    if (error) throw error;
-
-    const wanted = new Set(input.spentAts);
-    const existing = new Set<string>();
-
-    for (const row of data ?? []) {
-      const dateOnly = String(row.spent_at).substring(0, 10);
-      if (wanted.has(dateOnly)) {
-        existing.add(dateOnly);
-      }
-    }
-
-    return existing;
-  }
-
   async findAllWithCategoryForUser(userId: string): Promise<TransactionWithCategory[]> {
     const pageSize = 1000;
     let offset = 0;

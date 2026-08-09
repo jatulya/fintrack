@@ -17,7 +17,11 @@ import { recurringPaymentsApi } from './recurringPaymentsApi';
 import type { Account, CreateAccountInput } from '../models/accounts/types/accountTypes';
 import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
 import type { CreateTransactionInput, Transaction } from '../models/transactions/types/transactionTypes';
-import type { CreateRecurringPaymentInput, RecurringPayment } from '../models/recurring/types/recurringTypes';
+import type {
+  CreateRecurringPaymentInput,
+  ProcessRecurringPaymentsResult,
+  RecurringPayment,
+} from '../models/recurring/types/recurringTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
 import { SavingsGoal, Investment } from '../models/goals/types/goalTypes';
 import { BudgetLimit } from '../models/budgets/types/budgetTypes';
@@ -35,7 +39,7 @@ interface AppContextType {
   createAccount: (input: CreateAccountInput) => Promise<Account>;
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
-  processDueRecurringPayments: () => Promise<{ processedCount: number; createdCount: number }>;
+  processDueRecurringPayments: () => Promise<Pick<ProcessRecurringPaymentsResult, 'processedCount' | 'createdCount' | 'items'>>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
   setGoals: (goals: SavingsGoal[]) => void;
@@ -154,6 +158,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return {
       processedCount: data.processedCount,
       createdCount: data.createdCount,
+      items: data.items ?? [],
     };
   }, [refreshFinancials]);
 
