@@ -19,6 +19,15 @@ export class GoalsController {
       next(err);
     }
   };
+
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const goal = await goalsService.update(req.user!.sub, req.params.id as string, req.body);
+      res.json({ success: true, data: { goal } });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const goalsController = new GoalsController();

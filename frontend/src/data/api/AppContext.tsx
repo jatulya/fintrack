@@ -29,6 +29,7 @@ import type {
   GoalsPoolMetrics,
   Investment,
   SavingsGoal,
+  UpdateGoalInput,
 } from '../models/goals/types/goalTypes';
 import { BudgetLimit } from '../models/budgets/types/budgetTypes';
 
@@ -53,6 +54,7 @@ interface AppContextType {
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
   createGoal: (input: CreateGoalInput) => Promise<SavingsGoal>;
+  updateGoal: (id: string, input: UpdateGoalInput) => Promise<SavingsGoal>;
   processDueRecurringPayments: () => Promise<Pick<ProcessRecurringPaymentsResult, 'processedCount' | 'createdCount' | 'items'>>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
@@ -179,6 +181,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setGoalMetrics(listData.metrics);
     return goal;
   }, []);
+
+  const updateGoal = useCallback(async (id: string, input: UpdateGoalInput): Promise<SavingsGoal> => {
+    const result = await goalsApi.update(id, input);
+    const goal = unwrapApiResult(result).goal;
+    const listResult = await goalsApi.list();
+    const listData = unwrapApiResult(listResult);
+    setGoals(listData.goals);
+    setGoalMetrics(listData.metrics);
+    return goal;
+  }, []);
   
   const processDueRecurringPayments = useCallback(async () => {
     const result = await recurringPaymentsApi.processDue();
@@ -228,6 +240,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createTransaction,
     createRecurringPayment,
     createGoal,
+    updateGoal,
     processDueRecurringPayments,
     deleteTransaction,
     goals,
@@ -250,6 +263,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createTransaction,
     createRecurringPayment,
     createGoal,
+    updateGoal,
     processDueRecurringPayments,
     deleteTransaction,
     goals,

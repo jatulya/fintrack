@@ -299,6 +299,24 @@
     @apply text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap;
   }
 
+  .savings-goals-table-wrap {
+    @apply overflow-auto max-h-[32rem] rounded-2xl border border-slate-100;
+  }
+
+  .savings-goals-list {
+    @apply overflow-y-auto max-h-[32rem] pr-1;
+  }
+
+  .savings-goal-card-muted,
+  .savings-goal-row-muted {
+    opacity: 0.55;
+  }
+
+  .savings-goal-card-muted:hover,
+  .savings-goal-row-muted:hover {
+    opacity: 0.75;
+  }
+
   /* ── Glass foundation (reusable across cards, nav items) ── */
 
   .glass-surface {
