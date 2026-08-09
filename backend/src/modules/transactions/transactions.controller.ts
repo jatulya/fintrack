@@ -17,6 +17,7 @@ function parseListQuery(req: Request): ListTransactionsQuery {
     offset,
     direction: req.query.direction as ListTransactionsQuery['direction'],
     accountId: req.query.accountId as string | undefined,
+    categoryId: req.query.categoryId as string | undefined,
     search: req.query.search as string | undefined,
     sortBy,
     sortOrder: (req.query.sortOrder as 'asc' | 'desc' | undefined) ?? 'desc',
