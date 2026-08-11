@@ -1,11 +1,11 @@
-export { authApi } from './api/authApi';
-export { httpClient, setUnauthorizedHandler } from './api/httpClient';
-export { tokenStorage } from './api/tokenStorage';
-export { AuthProvider, useAuth } from './context/AuthContext';
+export { authApi } from "./api/authApi";
+export { httpClient, setUnauthorizedHandler } from "./api/httpClient";
+export { tokenStorage } from "./api/tokenStorage";
+export { AuthProvider, useAuth } from "./context/AuthContext";
 export type {
-  PublicUser,
+  PublicUserDetails,
   AuthResponse,
   LoginCredentials,
   RegisterCredentials,
   ApiResult,
-} from './types/authTypes';
+} from "./types/authTypes";
