@@ -146,6 +146,8 @@ export const strings = {
   savingsGoalClosedHint: 'Closed — add a recurring fund or transaction to reopen.',
   savingsAnalyticsTitle: 'Analytics & Asset Allocation',
   savingsAssetLocation: 'Where the money naps',
+  savingsAssetLocationEmpty:
+    'No savings or investment naps yet. Tag FD, RD, MF, or Stocks in your money diary notes.',
   savingsTrajectoryTitle: 'Savings Trajectory',
   savingsTrajectoryCaption: 'Projected piggy fill date',
   savingsPerMonth: '/mo',

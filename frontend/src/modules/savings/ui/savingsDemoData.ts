@@ -1,16 +1,3 @@
-export interface AssetAllocationItem {
-  id: string;
-  name: string;
-  amount: number;
-  percent: number;
-}
-
-export const DEMO_ASSET_ALLOCATION: AssetAllocationItem[] = [
-  { id: 'savings', name: 'Savings Account', amount: 50_000, percent: 30 },
-  { id: 'liquid-mf', name: 'Liquid Mutual Funds', amount: 85_000, percent: 51.5 },
-  { id: 'fd', name: 'Fixed Deposits', amount: 30_000, percent: 18.5 },
-];
-
 export interface TrajectoryPoint {
   label: string;
   actual: number | null;
