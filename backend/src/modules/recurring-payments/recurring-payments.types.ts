@@ -77,3 +77,14 @@ export interface CreateRecurringPaymentInput extends MoneyEntryFields {
   frequency: RecurringPaymentFrequency;
   startDate: string;
 }
+
+export interface UpdateRecurringPaymentInput {
+  accountId?: string;
+  categoryId?: string;
+  amount?: number;
+  direction?: RecurringPaymentDirection;
+  frequency?: RecurringPaymentFrequency;
+  notes?: string;
+  affectsBalance?: boolean;
+  isActive?: boolean;
+}

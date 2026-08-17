@@ -5,7 +5,7 @@ export interface Profile {
   updated_at: string;
 }
 
-export interface PublicUser {
+export interface PublicUserDetails {
   id: string;
   email: string;
   fullName: string | null;
@@ -30,7 +30,7 @@ export interface AuthSession {
 }
 
 export interface AuthResponse {
-  user: PublicUser;
+  user: PublicUserDetails;
   accessToken: string;
 }
 

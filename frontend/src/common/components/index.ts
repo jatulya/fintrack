@@ -1,4 +1,6 @@
 export { AppLink } from './AppLink';
+export { ActionMenu } from './ActionMenu';
+export type { ActionMenuItem } from './ActionMenu';
 export { ClayButton } from './ClayButton';
 export { CustomModal } from './CustomModal';
 export type { CustomModalProps, ModalAction } from './CustomModal';

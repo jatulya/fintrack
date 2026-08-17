@@ -1,73 +1,139 @@
-# React + TypeScript + Vite
+# Project Execution Flow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This document explains the execution flow of the application, starting from the `index.html` file and moving through the React entry point, application component, and authentication context.
 
-Currently, two official plugins are available:
+## 1. `index.html`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- When the application is run, the `index.html` file serves as the initial entry point loaded by the browser.
 
-## React Compiler
+- It contains a `<div>` element with the ID `root`. This is the DOM element into which the React application is mounted.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+  ```html
+  <div id="root"></div>
+  ```
 
-## Expanding the ESLint configuration
+- The React application's entry-point JavaScript/TypeScript file is loaded using a `<script>` tag. In a typical Vite + React + TypeScript project, this is `main.tsx`.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+  ```html
+  <script type="module" src="/src/main.tsx"></script>
+  ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 2. `main.tsx`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `main.tsx` is the entry point of the React application.
+- It obtains the DOM element with the ID `root` from `index.html`.
+- A React root is then created using `createRoot()`.
+- The `App` component is rendered inside `React.StrictMode`.
+
+## 3. `App.tsx`
+
+- `App.tsx` is the main component of the React application.
+- It defines the application's overall component structure.
+- It returns the application's routes/pages.
+- The routes are wrapped inside providers such as `AuthProvider` and `AppProvider`.
+
+These providers make shared data and functionality available to the components rendered inside them.
+
+---
+
+## 4. `AuthContext.tsx`
+
+`AuthContext.tsx` is responsible for managing and providing authentication-related information throughout the application.
+
+### Information provided by `AuthContext`
+
+The context can provide information such as:
+
+- The currently authenticated user's details
+  - User ID
+  - Email
+  - Full name
+
+- Authentication/loading state
+- Access-token refresh status
+
+### State variables
+
+Two main pieces of state are maintained:
+
+#### 1. `user`
+
+```tsx
+user: PublicUserDetails | null;
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The `user` state contains the currently authenticated user's public information.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The `PublicUserDetails` contains:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `id`
+- `email`
+- `fullName`
+
+#### 2. `isLoading`
+
+```tsx
+isLoading: boolean;
 ```
+
+This state indicates whether the authentication information is currently being loaded or initialized.
+
+---
+
+## 5. `refreshPromise`
+
+A `ref` is used to store the promise associated with refreshing the authentication token.
+
+```tsx
+  const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
+```
+
+The purpose of storing the promise in a `ref` is to keep the same promise available across renders without causing the component to re-render when the value changes.
+
+### Why is this required?
+
+Suppose the access token has a short lifetime, such as **15 minutes**.
+
+When the access token expires, the application needs to obtain a new access token using the refresh mechanism.
+
+We do **not** want the entire application to reload every time the access token needs to be refreshed. Instead, the token should be refreshed in the background while the application continues running normally.
+
+The `refreshPromiseRef` helps coordinate this process.
+
+```text
+Request 1 ──┐
+Request 2 ──┼──> Existing refreshPromiseRef ──> Token refreshed
+Request 3 ──┘
+```
+
+All requests can wait for the same refresh operation and use the resulting token once it is available.
+
+The `refreshPromise` **does not contain the refresh token itself**.
+It stores the **Promise representing the token-refresh operation**.
+
+In other words:
+
+```text
+Refresh token
+     ↓
+Used to request a new access token
+     ↓
+Refresh operation
+     ↓
+Promise
+     ↓
+Stored in refreshPromise.current
+```
+
+The purpose of the ref is therefore to keep track of an ongoing refresh operation and allow multiple parts of the application to wait for the same operation instead of starting multiple refresh requests.
+
+---
+
+## Overall Application Flow
+
+- `index.html` provides the DOM container
+- `main.tsx` initializes React
+- `App.tsx` defines the application's structure
+- `AuthContext.tsx` manages authentication-related state and makes it available throughout the application.

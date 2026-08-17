@@ -1,12 +1,11 @@
-export interface PublicUser {
+export interface PublicUserDetails {
   id: string;
   email: string;
-  fullName: string | null;
-  createdAt: string;
+  fullName: string;
 }
 
 export interface AuthResponse {
-  user: PublicUser;
+  user: PublicUserDetails;
   accessToken: string;
 }
 

@@ -29,6 +29,28 @@ export class RecurringPaymentsController {
     }
   };
 
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const recurringPayment = await recurringPaymentsService.update(
+        req.user!.sub,
+        req.params.id as string,
+        req.body,
+      );
+      res.json({ success: true, data: { recurringPayment } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await recurringPaymentsService.delete(req.user!.sub, req.params.id as string);
+      res.json({ success: true, data: { message: 'Recurring payment deleted' } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   processDue = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const result = await recurringPaymentsService.processDue(req.user!.sub);

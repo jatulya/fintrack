@@ -1,5 +1,7 @@
 import { accountsRepository } from './accounts.repository.js';
-import type { AccountRow, CreateAccountInput, PublicAccount } from './accounts.types.js';
+import type { AccountRow, CreateAccountInput, PublicAccount, UpdateAccountInput } from './accounts.types.js';
+import { NotFoundError } from '../../utils/errors.js';
+import { errorMessages } from '../../common/texts/strings.js';
 
 function toPublicAccount(row: AccountRow): PublicAccount {
   return {
@@ -22,6 +24,16 @@ export class AccountsService {
 
   async create(userId: string, input: CreateAccountInput): Promise<PublicAccount> {
     const row = await this.repo.create(userId, input);
+    return toPublicAccount(row);
+  }
+
+  async update(userId: string, id: string, input: UpdateAccountInput): Promise<PublicAccount> {
+    const existing = await this.repo.findById(userId, id);
+    if (!existing) {
+      throw new NotFoundError(errorMessages.financial.accountNotFound);
+    }
+
+    const row = await this.repo.update(userId, id, input);
     return toPublicAccount(row);
   }
 

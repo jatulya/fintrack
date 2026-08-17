@@ -4,6 +4,7 @@ import type {
   CreateRecurringPaymentInput,
   ProcessRecurringPaymentsResult,
   RecurringPayment,
+  UpdateRecurringPaymentInput,
 } from '../models/recurring/types/recurringTypes';
 
 export const recurringPaymentsApi = {
@@ -15,6 +16,19 @@ export const recurringPaymentsApi = {
     return httpClient<ApiResult<{ recurringPayment: RecurringPayment }>>('/recurring-payments', {
       method: 'POST',
       body: input,
+    });
+  },
+
+  update(id: string, input: UpdateRecurringPaymentInput) {
+    return httpClient<ApiResult<{ recurringPayment: RecurringPayment }>>(`/recurring-payments/${id}`, {
+      method: 'PATCH',
+      body: input,
+    });
+  },
+
+  remove(id: string) {
+    return httpClient<ApiResult<{ message: string }>>(`/recurring-payments/${id}`, {
+      method: 'DELETE',
     });
   },
 

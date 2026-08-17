@@ -43,6 +43,19 @@ export class TransactionsController {
     }
   };
 
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const transaction = await transactionsService.update(
+        req.user!.sub,
+        req.params.id as string,
+        req.body,
+      );
+      res.json({ success: true, data: { transaction } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       await transactionsService.delete(req.user!.sub, req.params.id as string);

@@ -24,6 +24,16 @@ export interface CreateTransactionInput {
   affectsBalance?: boolean;
 }
 
+export interface UpdateTransactionInput {
+  accountId?: string;
+  categoryId?: string;
+  amount?: number;
+  spentAt?: string;
+  notes?: string;
+  direction?: TransactionDirection;
+  affectsBalance?: boolean;
+}
+
 export type TransactionSortField = 'spentAt' | 'amount';
 
 export interface ListTransactionsParams {
