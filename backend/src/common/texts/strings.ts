@@ -20,6 +20,12 @@ export const errorMessages = {
     categoryNotFound: 'Category not found',
     transactionNotFound: 'Transaction not found',
     recurringPaymentNotFound: 'Recurring payment not found',
+    goalNotFound: 'Goal not found',
+    recurringAlreadyLinked: 'One or more recurring payments are already linked to another goal',
+    transactionAlreadyLinked: 'One or more transactions are already linked to another goal',
+    creditRecurringNotAllowed: 'Credit (received) recurring payments cannot be linked to goals',
+    goalNeedsFundingSource: 'Link at least one recurring payment or transaction',
+
     importJobNotFound: 'Import job not found',
     importFileRequired: 'An Excel file is required',
     invalidImportFile: 'Only .xlsx, .xls, or .csv files are allowed',

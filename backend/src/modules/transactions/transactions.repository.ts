@@ -111,6 +111,20 @@ export class TransactionsRepository {
     return data as TransactionRow | null;
   }
 
+  async findByIds(userId: string, ids: string[]): Promise<TransactionWithCategory[]> {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .select('*, categories(name, label)')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .in('id', ids);
+
+    if (error) throw error;
+    return (data ?? []) as TransactionWithCategory[];
+  }
+
   async softDelete(userId: string, id: string): Promise<void> {
     const { error } = await supabaseAdmin
       .from(TABLE)

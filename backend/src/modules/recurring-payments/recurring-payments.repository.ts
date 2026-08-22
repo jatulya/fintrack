@@ -23,6 +23,20 @@ export class RecurringPaymentsRepository {
     return (data ?? []) as RecurringPaymentWithRelations[];
   }
 
+  async findByIds(userId: string, ids: string[]): Promise<RecurringPaymentRow[]> {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await supabaseAdmin
+      .from(TABLE)
+      .select("*")
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .in("id", ids);
+
+    if (error) throw error;
+    return (data ?? []) as RecurringPaymentRow[];
+  }
+
   async findById(
     userId: string,
     id: string,

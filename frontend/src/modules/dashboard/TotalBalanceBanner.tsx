@@ -10,6 +10,7 @@ const EMPTY_SUMMARY: DashboardSummary = {
   savings: { amount: 0, changePercent: 0 },
   investments: { amount: 0, changePercent: 0 },
   savingsRate: 0,
+  assetAllocation: [],
 };
 
 export const TotalBalanceBanner = () => {

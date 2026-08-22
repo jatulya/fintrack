@@ -14,6 +14,7 @@ import { accountsApi } from './accountsApi';
 import { categoriesApi } from './categoriesApi';
 import { transactionsApi } from './transactionsApi';
 import { recurringPaymentsApi } from './recurringPaymentsApi';
+import { goalsApi } from './goalsApi';
 import type { Account, CreateAccountInput, UpdateAccountInput } from '../models/accounts/types/accountTypes';
 import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
 import type {
@@ -29,8 +30,21 @@ import type {
   RecurringPayment,
 } from '../models/recurring/types/recurringTypes';
 import { TRANSACTIONS_PAGE_SIZE } from '../models/transactions/types/transactionTypes';
-import { SavingsGoal, Investment } from '../models/goals/types/goalTypes';
+import type {
+  CreateGoalInput,
+  GoalsPoolMetrics,
+  Investment,
+  SavingsGoal,
+  UpdateGoalInput,
+} from '../models/goals/types/goalTypes';
 import { BudgetLimit } from '../models/budgets/types/budgetTypes';
+
+const EMPTY_GOAL_METRICS: GoalsPoolMetrics = {
+  totalCollected: 0,
+  totalTarget: 0,
+  amountToCollect: 0,
+  overallRate: 0,
+};
 
 interface AppContextType {
   categories: Category[];
@@ -47,12 +61,14 @@ interface AppContextType {
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
   updateTransaction: (id: string, input: UpdateTransactionInput) => Promise<Transaction>;
   createRecurringPayment: (input: CreateRecurringPaymentInput) => Promise<RecurringPayment>;
+  createGoal: (input: CreateGoalInput) => Promise<SavingsGoal>;
+  updateGoal: (id: string, input: UpdateGoalInput) => Promise<SavingsGoal>;
   updateRecurringPayment: (id: string, input: UpdateRecurringPaymentInput) => Promise<RecurringPayment>;
   deleteRecurringPayment: (id: string) => Promise<void>;
   processDueRecurringPayments: () => Promise<Pick<ProcessRecurringPaymentsResult, 'processedCount' | 'createdCount' | 'items'>>;
   deleteTransaction: (id: string) => Promise<void>;
   goals: SavingsGoal[];
-  setGoals: (goals: SavingsGoal[]) => void;
+  goalMetrics: GoalsPoolMetrics;
   investments: Investment[];
   setInvestments: (investments: Investment[]) => void;
   budgets: BudgetLimit[];
@@ -68,10 +84,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsRevision, setTransactionsRevision] = useState(0);
   const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>([]);
+  const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [goalMetrics, setGoalMetrics] = useState<GoalsPoolMetrics>(EMPTY_GOAL_METRICS);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [goals, setGoals] = useLocalStorage<SavingsGoal[]>('finpulse_goals', []);
   const [investments, setInvestments] = useLocalStorage<Investment[]>('finpulse_investments', []);
   const [budgets, setBudgets] = useLocalStorage<BudgetLimit[]>('finpulse_budgets', []);
 
@@ -79,18 +96,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setIsLoading(true);
     setError(null);
     try {
-      const [categoriesResult, accountsResult, transactionsResult, recurringResult] = await Promise.all([
-        categoriesApi.list(),
-        accountsApi.list(),
-        transactionsApi.list({ limit: TRANSACTIONS_PAGE_SIZE, offset: 0 }),
-        recurringPaymentsApi.list(),
-      ]);
+      const [categoriesResult, accountsResult, transactionsResult, recurringResult, goalsResult] =
+        await Promise.all([
+          categoriesApi.list(),
+          accountsApi.list(),
+          transactionsApi.list({ limit: TRANSACTIONS_PAGE_SIZE, offset: 0 }),
+          recurringPaymentsApi.list(),
+          goalsApi.list(),
+        ]);
 
       setCategories(unwrapApiResult(categoriesResult).categories);
       setAccounts(unwrapApiResult(accountsResult).accounts);
       setTransactions(unwrapApiResult(transactionsResult).transactions);
       setTransactionsRevision((prev) => prev + 1);
       setRecurringPayments(unwrapApiResult(recurringResult).recurringPayments);
+      const goalsData = unwrapApiResult(goalsResult);
+      setGoals(goalsData.goals);
+      setGoalMetrics(goalsData.metrics);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load financial data');
     } finally {
@@ -109,6 +131,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setTransactions([]);
       setTransactionsRevision(0);
       setRecurringPayments([]);
+      setGoals([]);
+      setGoalMetrics(EMPTY_GOAL_METRICS);
       setError(null);
     }
   }, [isAuthenticated, authLoading, refreshFinancials]);
@@ -175,6 +199,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return recurringPayment;
   }, [refreshFinancials]);
 
+  const createGoal = useCallback(async (input: CreateGoalInput): Promise<SavingsGoal> => {
+    const result = await goalsApi.create(input);
+    const goal = unwrapApiResult(result).goal;
+    const listResult = await goalsApi.list();
+    const listData = unwrapApiResult(listResult);
+    setGoals(listData.goals);
+    setGoalMetrics(listData.metrics);
+    return goal;
+  }, []);
+
+  const updateGoal = useCallback(async (id: string, input: UpdateGoalInput): Promise<SavingsGoal> => {
+    const result = await goalsApi.update(id, input);
+    const goal = unwrapApiResult(result).goal;
+    const listResult = await goalsApi.list();
+    const listData = unwrapApiResult(listResult);
+    setGoals(listData.goals);
+    setGoalMetrics(listData.metrics);
+    return goal;
+  }, []);
+  
   const updateRecurringPayment = useCallback(async (
     id: string,
     input: UpdateRecurringPaymentInput,
@@ -241,12 +285,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createTransaction,
     updateTransaction,
     createRecurringPayment,
+    createGoal,
+    updateGoal,
     updateRecurringPayment,
     deleteRecurringPayment,
     processDueRecurringPayments,
     deleteTransaction,
     goals,
-    setGoals,
+    goalMetrics,
     investments,
     setInvestments,
     budgets,
@@ -266,12 +312,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createTransaction,
     updateTransaction,
     createRecurringPayment,
+    createGoal,
+    updateGoal,
     updateRecurringPayment,
     deleteRecurringPayment,
     processDueRecurringPayments,
     deleteTransaction,
     goals,
-    setGoals,
+    goalMetrics,
     investments,
     setInvestments,
     budgets,

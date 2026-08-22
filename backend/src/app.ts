@@ -8,6 +8,7 @@ import { accountsRouter } from './modules/accounts/accounts.routes.js';
 import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { transactionsRouter } from './modules/transactions/transactions.routes.js';
 import { recurringPaymentsRouter } from './modules/recurring-payments/recurring-payments.routes.js';
+import { goalsRouter } from './modules/goals/goals.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
@@ -37,6 +38,7 @@ export function createApp() {
   app.use(`${env.apiBasePath}/categories`, categoriesRouter);
   app.use(`${env.apiBasePath}/transactions`, transactionsRouter);
   app.use(`${env.apiBasePath}/recurring-payments`, recurringPaymentsRouter);
+  app.use(`${env.apiBasePath}/goals`, goalsRouter);
   app.use(`${env.apiBasePath}/dashboard`, dashboardRouter);
 
   app.use(errorHandler);

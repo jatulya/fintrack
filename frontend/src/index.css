@@ -14,7 +14,7 @@
   --accent: #E467AC;
   --error: #1F0322;
 
-  --bg-light: #EFF7F6;
+  --bg-light: #f8f4f8;
   --bg-dark: #1F0322;
 
   --text-primary: #1F0322;
@@ -280,6 +280,50 @@
     background: var(--clay-bg);
     box-shadow: var(--clay-card-inset), var(--clay-card-outer);
     @apply rounded-3xl p-6 min-w-0;
+  }
+
+  /* ── Piggy Bank / Savings analytics ── */
+
+  .savings-kpi-card,
+  .savings-panel {
+    background: #ffffff;
+    border: 1px solid color-mix(in srgb, var(--secondary) 55%, white);
+    box-shadow: 0 12px 32px rgba(228, 103, 172, 0.1), 0 2px 8px rgba(31, 3, 34, 0.04);
+    @apply rounded-3xl p-5 sm:p-6 min-w-0;
+  }
+
+  .savings-kpi-card {
+    background: linear-gradient(160deg, #ffffff 0%, #FDF2F5 100%);
+  }
+
+  .savings-goal-card,
+  .savings-allocation-row {
+    background: #FDF2F5;
+    @apply rounded-2xl p-4;
+  }
+
+  .savings-monthly-badge {
+    background: color-mix(in srgb, var(--accent) 14%, white);
+    color: var(--accent);
+    @apply text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap;
+  }
+
+  .savings-goals-table-wrap {
+    @apply overflow-auto max-h-[32rem] rounded-2xl border border-slate-100;
+  }
+
+  .savings-goals-list {
+    @apply overflow-y-auto max-h-[32rem] pr-1;
+  }
+
+  .savings-goal-card-muted,
+  .savings-goal-row-muted {
+    opacity: 0.55;
+  }
+
+  .savings-goal-card-muted:hover,
+  .savings-goal-row-muted:hover {
+    opacity: 0.75;
   }
 
   /* ── Glass foundation (reusable across cards, nav items) ── */
