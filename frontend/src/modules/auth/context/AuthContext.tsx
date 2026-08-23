@@ -45,10 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshSession = useCallback(async (): Promise<string | null> => {
+    //returns the ongoing promise if there is one
     if (refreshPromiseRef.current) {
       return refreshPromiseRef.current;
     }
 
+    //if not, start a new one
     refreshPromiseRef.current = (async () => {
       try {
         const result = await authApi.refresh();
@@ -59,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearSession();
         return null;
       } finally {
+        //once done or failed, clear the promise
         refreshPromiseRef.current = null;
       }
     })();
@@ -73,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
-    async function bootstrap() {
+    async function setUserAndToken() {
       try {
         const token = await refreshSession();
         if (cancelled || !token) return;
@@ -82,12 +85,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setUser(unwrapApiResult(result).user);
         }
-      } finally {
+      } catch(err) {
+        console.error('Error during loading user details', err);
+      }
+      finally {
         if (!cancelled) setIsLoading(false);
       }
     }
 
-    bootstrap();
+    setUserAndToken();
     return () => {
       cancelled = true;
     };
