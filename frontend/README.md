@@ -66,11 +66,7 @@ user: PublicUserDetails | null;
 isLoading: boolean;
 ```
 
----
-
-### `refreshPromise`
-
-It is a `ref` that is used to store the promise associated with refreshing the authentication token.
+### refreshPromise
 
 ```tsx
   const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
@@ -111,14 +107,14 @@ Promise
 Stored in refreshPromise.current
 ```
 
----
-
 The purpose of the ref is therefore to keep track of an ongoing refresh operation and allow multiple parts of the application to wait for the same operation instead of starting multiple refresh requests.
 
 #### Why are functions in AuthContext useCallback?
 This is to avoid the actions to take place or refetch or refresh user details every time page is mounted or unmounted. This keeps its reference across re-renders. These functions trigger state changes, so cannot put it outside the class to keep its reference (like **applySession**).
 
-## 5. unwrapApiResult
+---
+
+## 5. `unwrapApiResult`
 This function is used on the response of every Api call. It throws error when the api returns success as false. The reason why ApiResult is either of ApiSuccess or ApiError is to avoid any runtime errors. For eg, in the login case without this technique, we are accessing data.user or data directly. If error is thrown, the api structure is different and accessing result.data can cause **cannot access properties of undefined**. 
 Now code cannot be written without considering error cases for api.
 
