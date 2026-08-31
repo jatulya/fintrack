@@ -110,13 +110,12 @@ Stored in refreshPromise.current
 The purpose of the ref is therefore to keep track of an ongoing refresh operation and allow multiple parts of the application to wait for the same operation instead of starting multiple refresh requests.
 
 #### Why are functions in AuthContext useCallback?
-This is to avoid the actions to take place or refetch or refresh user details every time page is mounted or unmounted. This keeps its reference across re-renders. These functions trigger state changes, so cannot put it outside the class to keep its reference (like **applySession**).
+`useCallback` keeps stable function references across re-renders so consumers don't re-run effects on every mount. These functions close over state setters, so they can't live outside the component like **applySession**.
 
 ---
 
 ## 5. `unwrapApiResult`
-This function is used on the response of every Api call. It throws error when the api returns success as false. The reason why ApiResult is either of ApiSuccess or ApiError is to avoid any runtime errors. For eg, in the login case without this technique, we are accessing data.user or data directly. If error is thrown, the api structure is different and accessing result.data can cause **cannot access properties of undefined**. 
-Now code cannot be written without considering error cases for api.
+Wraps every API response and throws when `success` is false. `ApiResult` is either `ApiSuccess` or `ApiError`, so TypeScript forces you to handle both shapes — without it, reading `result.data` on an error response can throw **cannot access properties of undefined**.
 
 ## Overall Application Flow
 
