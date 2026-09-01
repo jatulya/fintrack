@@ -16,6 +16,9 @@ function buildQueryString(params: ListTransactionsParams = {}): string {
   if (params.direction) searchParams.set('direction', params.direction);
   if (params.accountId) searchParams.set('accountId', params.accountId);
   if (params.categoryId) searchParams.set('categoryId', params.categoryId);
+  if (params.categoryIds?.length) searchParams.set('categoryIds', params.categoryIds.join(','));
+  if (params.spentFrom) searchParams.set('spentFrom', params.spentFrom);
+  if (params.spentTo) searchParams.set('spentTo', params.spentTo);
   if (params.search) searchParams.set('search', params.search);
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);

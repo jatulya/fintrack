@@ -19,6 +19,19 @@ export class CategoriesController {
       next(err);
     }
   };
+
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const category = await categoriesService.update(
+        req.user!.sub,
+        req.params.id as string,
+        req.body,
+      );
+      res.json({ success: true, data: { category } });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const categoriesController = new CategoriesController();

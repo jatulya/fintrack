@@ -11,6 +11,10 @@ function parseListQuery(req: Request): ListTransactionsQuery {
   const limit = Math.min(Number(req.query.limit) || TRANSACTIONS_PAGE_SIZE, TRANSACTIONS_PAGE_SIZE);
   const offset = Number(req.query.offset) || 0;
   const sortBy = (req.query.sortBy as TransactionSortField | undefined) ?? 'spentAt';
+  const categoryIdsRaw = req.query.categoryIds as string | undefined;
+  const categoryIds = categoryIdsRaw
+    ? categoryIdsRaw.split(',').map((id) => id.trim()).filter(Boolean)
+    : undefined;
 
   return {
     limit,
@@ -18,6 +22,9 @@ function parseListQuery(req: Request): ListTransactionsQuery {
     direction: req.query.direction as ListTransactionsQuery['direction'],
     accountId: req.query.accountId as string | undefined,
     categoryId: req.query.categoryId as string | undefined,
+    categoryIds: categoryIds?.length ? categoryIds : undefined,
+    spentFrom: req.query.spentFrom as string | undefined,
+    spentTo: req.query.spentTo as string | undefined,
     search: req.query.search as string | undefined,
     sortBy,
     sortOrder: (req.query.sortOrder as 'asc' | 'desc' | undefined) ?? 'desc',

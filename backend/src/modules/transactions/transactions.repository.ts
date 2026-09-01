@@ -32,6 +32,16 @@ export class TransactionsRepository {
 
     if (query.categoryId) {
       request = request.eq('category_id', query.categoryId);
+    } else if (query.categoryIds && query.categoryIds.length > 0) {
+      request = request.in('category_id', query.categoryIds);
+    }
+
+    if (query.spentFrom) {
+      request = request.gte('spent_at', query.spentFrom);
+    }
+
+    if (query.spentTo) {
+      request = request.lte('spent_at', `${query.spentTo}T23:59:59.999`);
     }
 
     if (query.search) {

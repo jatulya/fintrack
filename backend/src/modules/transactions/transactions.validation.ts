@@ -26,6 +26,30 @@ export const listTransactionsValidation = [
     .optional()
     .isUUID()
     .withMessage('A valid category ID is required'),
+  query('categoryIds')
+    .optional()
+    .custom((value) => {
+      if (value === undefined || value === null || value === '') return true;
+      if (typeof value !== 'string') {
+        throw new Error('categoryIds must be a comma-separated list of UUIDs');
+      }
+      const ids = value.split(',').map((id) => id.trim()).filter(Boolean);
+      if (ids.length === 0) return true;
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!ids.every((id) => uuidPattern.test(id))) {
+        throw new Error('categoryIds must contain valid UUIDs');
+      }
+      return true;
+    }),
+  query('spentFrom')
+    .optional()
+    .isISO8601({ strict: true })
+    .withMessage('spentFrom must be a valid date (YYYY-MM-DD)'),
+  query('spentTo')
+    .optional()
+    .isISO8601({ strict: true })
+    .withMessage('spentTo must be a valid date (YYYY-MM-DD)'),
   query('search')
     .optional()
     .trim()

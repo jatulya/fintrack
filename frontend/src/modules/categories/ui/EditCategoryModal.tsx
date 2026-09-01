@@ -2,19 +2,23 @@ import React, { useState } from 'react';
 import { CustomModal } from '../../../common/components/CustomModal';
 import { InputField } from '../../../common/components/InputField';
 import { useApp } from '../../../data/api/AppContext';
+import type { Category } from '../../../data/models/categories/types/categoryTypes';
 import { strings } from '../../../common/texts/strings';
 import { parseMonthlyBudgetInput } from './parseBudgetInput';
 
-interface AddCategoryModalProps {
+interface EditCategoryModalProps {
+  category: Category;
   onClose: () => void;
 }
 
-export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) => {
-  const { createCategory } = useApp();
-  const [label, setLabel] = useState('');
-  const [name, setName] = useState('');
-  const [color, setColor] = useState('#6366f1');
-  const [monthlyBudget, setMonthlyBudget] = useState('');
+export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({ category, onClose }) => {
+  const { updateCategory } = useApp();
+  const [label, setLabel] = useState(category.label);
+  const [name, setName] = useState(category.name);
+  const [color, setColor] = useState(category.color ?? '#6366f1');
+  const [monthlyBudget, setMonthlyBudget] = useState(
+    category.monthlyBudget != null ? String(Math.trunc(category.monthlyBudget)) : '',
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +34,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
     setIsSubmitting(true);
     setError(null);
     try {
-      await createCategory({
+      await updateCategory(category.id, {
         label,
         name,
         color,
@@ -38,7 +42,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create category');
+      setError(err instanceof Error ? err.message : 'Failed to update category');
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +50,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose }) =
 
   return (
     <CustomModal
-      title="Add Category"
+      title="Edit Theme"
       onClose={onClose}
       onSubmit={handleSubmit}
       primaryText={isSubmitting ? 'Saving...' : strings.save}

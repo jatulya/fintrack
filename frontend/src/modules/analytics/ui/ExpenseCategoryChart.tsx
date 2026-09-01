@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Check, ChevronDown } from 'lucide-react';
 import { ClayCard } from '../../../common/components/ClayCard';
 import { strings } from '../../../common/texts/strings';
 import { colors } from '../../../common/themes/colors';
@@ -45,106 +44,19 @@ function CategoryTooltip({
 }
 
 export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ data }) => {
-  const allNames = useMemo(() => data.map((d) => d.name), [data]);
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(allNames));
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setSelected(new Set(data.map((d) => d.name)));
-  }, [data]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: MouseEvent) => {
-      if (!dropdownRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onPointerDown);
-    return () => document.removeEventListener('mousedown', onPointerDown);
-  }, [open]);
-
   const chartData = useMemo(() => {
-    const filtered = data.filter((d) => selected.has(d.name));
-    const total = filtered.reduce((sum, d) => sum + d.value, 0);
-    return filtered.map((d, index) => ({
+    const total = data.reduce((sum, d) => sum + d.value, 0);
+    return data.map((d, index) => ({
       ...d,
       percent: total > 0 ? Math.round((d.value / total) * 100) : 0,
       color: CHART_COLORS[index % CHART_COLORS.length],
     }));
-  }, [data, selected]);
-
-  const allSelected = allNames.length > 0 && allNames.every((name) => selected.has(name));
-  const dropdownLabel = allSelected
-    ? strings.allCategories
-    : selected.size === 0
-      ? strings.noCategoriesSelected
-      : `${selected.size} ${strings.categoriesSelected}`;
-
-  const toggleAll = () => {
-    setSelected(allSelected ? new Set() : new Set(allNames));
-  };
-
-  const toggleCategory = (name: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  };
+  }, [data]);
 
   return (
-    <ClayCard className="analytics-chart-card">
-      <div className="analytics-chart-header analytics-chart-header-split">
+    <ClayCard id="expense-categorization" className="analytics-chart-card">
+      <div className="analytics-chart-header">
         <h3 className="analytics-chart-title">{strings.expenseCategorization}</h3>
-        <div className="analytics-category-dropdown" ref={dropdownRef}>
-          <button
-            type="button"
-            className="analytics-category-trigger"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-haspopup="listbox"
-          >
-            <span>{dropdownLabel}</span>
-            <ChevronDown size={16} />
-          </button>
-          {open && (
-            <div className="analytics-category-menu" role="listbox" aria-multiselectable="true">
-              <button
-                type="button"
-                className="analytics-category-option"
-                onClick={toggleAll}
-                role="option"
-                aria-selected={allSelected}
-              >
-                <span className={`analytics-category-check ${allSelected ? 'is-checked' : ''}`}>
-                  {allSelected && <Check size={12} />}
-                </span>
-                {strings.allCategories}
-              </button>
-              {data.map((item) => {
-                const isChecked = selected.has(item.name);
-                return (
-                  <button
-                    key={item.name}
-                    type="button"
-                    className="analytics-category-option"
-                    onClick={() => toggleCategory(item.name)}
-                    role="option"
-                    aria-selected={isChecked}
-                  >
-                    <span className={`analytics-category-check ${isChecked ? 'is-checked' : ''}`}>
-                      {isChecked && <Check size={12} />}
-                    </span>
-                    {item.name}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
 
       {chartData.length === 0 ? (

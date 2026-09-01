@@ -16,7 +16,11 @@ import { transactionsApi } from './transactionsApi';
 import { recurringPaymentsApi } from './recurringPaymentsApi';
 import { goalsApi } from './goalsApi';
 import type { Account, CreateAccountInput, UpdateAccountInput } from '../models/accounts/types/accountTypes';
-import type { Category, CreateCategoryInput } from '../models/categories/types/categoryTypes';
+import type {
+  Category,
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from '../models/categories/types/categoryTypes';
 import type {
   CreateTransactionInput,
   Transaction,
@@ -56,6 +60,7 @@ interface AppContextType {
   error: string | null;
   refreshFinancials: () => Promise<void>;
   createCategory: (input: CreateCategoryInput) => Promise<Category>;
+  updateCategory: (id: string, input: UpdateCategoryInput) => Promise<Category>;
   createAccount: (input: CreateAccountInput) => Promise<Account>;
   updateAccount: (id: string, input: UpdateAccountInput) => Promise<Account>;
   createTransaction: (input: CreateTransactionInput) => Promise<Transaction>;
@@ -141,6 +146,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const result = await categoriesApi.create(input);
     const category = unwrapApiResult(result).category;
     setCategories((prev) => [...prev, category].sort((a, b) => a.label.localeCompare(b.label)));
+    return category;
+  }, []);
+
+  const updateCategory = useCallback(async (id: string, input: UpdateCategoryInput): Promise<Category> => {
+    const result = await categoriesApi.update(id, input);
+    const category = unwrapApiResult(result).category;
+    setCategories((prev) =>
+      prev
+        .map((item) => (item.id === id ? category : item))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    );
     return category;
   }, []);
 
@@ -280,6 +296,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     error,
     refreshFinancials,
     createCategory,
+    updateCategory,
     createAccount,
     updateAccount,
     createTransaction,
@@ -307,6 +324,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     error,
     refreshFinancials,
     createCategory,
+    updateCategory,
     createAccount,
     updateAccount,
     createTransaction,

@@ -42,6 +42,9 @@ export interface ListTransactionsParams {
   direction?: TransactionDirection;
   accountId?: string;
   categoryId?: string;
+  categoryIds?: string[];
+  spentFrom?: string;
+  spentTo?: string;
   search?: string;
   sortBy?: TransactionSortField;
   sortOrder?: 'asc' | 'desc';

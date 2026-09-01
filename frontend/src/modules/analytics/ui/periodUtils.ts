@@ -390,3 +390,198 @@ export function maxMonthInputValue(now = new Date()): string {
 export function maxYearValue(now = new Date()): number {
   return now.getFullYear();
 }
+
+export function filterTransactionsByCategoryLabels(
+  transactions: Transaction[],
+  selectedLabels: Set<string> | null,
+): Transaction[] {
+  if (selectedLabels === null) return transactions;
+  if (selectedLabels.size === 0) return [];
+  return transactions.filter((t) => selectedLabels.has(t.categoryLabel));
+}
+
+function includesCategoryLabel(
+  selectedLabels: Set<string> | null | undefined,
+  categoryLabel: string,
+): boolean {
+  if (selectedLabels === null || selectedLabels === undefined) return true;
+  if (selectedLabels.size === 0) return false;
+  return selectedLabels.has(categoryLabel);
+}
+
+export function sumSpentInMonth(
+  transactions: Transaction[],
+  monthKey: string,
+  selectedLabels?: Set<string> | null,
+): number {
+  return transactions.reduce((sum, t) => {
+    if (t.direction !== 'spent') return sum;
+    if (!includesCategoryLabel(selectedLabels, t.categoryLabel)) return sum;
+    const key = toMonthInputValue(parseSpentAt(t.spentAt));
+    if (key !== monthKey) return sum;
+    return sum + t.amount;
+  }, 0);
+}
+
+export function sumSpentInRange(
+  transactions: Transaction[],
+  range: DateRange,
+  selectedLabels?: Set<string> | null,
+): number {
+  return filterTransactionsByRange(transactions, range).reduce((sum, t) => {
+    if (t.direction !== 'spent') return sum;
+    if (!includesCategoryLabel(selectedLabels, t.categoryLabel)) return sum;
+    return sum + t.amount;
+  }, 0);
+}
+
+export interface SpendVsPriorPeriodResult {
+  periodSpend: number;
+  priorAverage: number;
+  percent: number | null;
+  periodSpendLabel: string;
+  priorAverageLabel: string;
+  comparisonContext: string;
+}
+
+function shiftPeriodSelection(selection: PeriodSelection, stepsBack: number): PeriodSelection {
+  if (selection.preset === 'monthly') {
+    const [yStr, mStr] = selection.monthValue.split('-');
+    const date = new Date(Number(yStr), Number(mStr) - 1 - stepsBack, 1);
+    return { ...selection, monthValue: toMonthInputValue(date) };
+  }
+  if (selection.preset === 'weekly') {
+    return { ...selection, weekOffset: selection.weekOffset - stepsBack };
+  }
+  if (selection.preset === 'yearly') {
+    return { ...selection, yearValue: selection.yearValue - stepsBack };
+  }
+
+  const range = resolvePeriodRange(selection);
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const spanDays =
+    Math.ceil((range.end.getTime() - range.start.getTime()) / msPerDay) + 1;
+  const priorEnd = addDays(range.start, -1 - (stepsBack - 1) * spanDays);
+  const priorStart = addDays(priorEnd, -(spanDays - 1));
+  return {
+    ...selection,
+    customStart: toDateInputValue(priorStart),
+    customEnd: toDateInputValue(priorEnd),
+  };
+}
+
+function spendInsightLabels(selection: PeriodSelection, range: DateRange): {
+  periodSpendLabel: string;
+  priorAverageLabel: string;
+  comparisonContext: string;
+} {
+  if (selection.preset === 'monthly') {
+    const monthLabel = range.start.toLocaleDateString(undefined, {
+      month: 'long',
+      year: 'numeric',
+    });
+    return {
+      periodSpendLabel: `Spent in ${monthLabel}`,
+      priorAverageLabel: 'Avg of prior 4 months',
+      comparisonContext: `in ${monthLabel} compared to the last 4 months`,
+    };
+  }
+  if (selection.preset === 'weekly') {
+    const weekLabel = formatPeriodDisplayLabel(selection, range);
+    return {
+      periodSpendLabel: `Spent (${weekLabel})`,
+      priorAverageLabel: 'Avg of prior 4 weeks',
+      comparisonContext: `in ${weekLabel} compared to the last 4 weeks`,
+    };
+  }
+  if (selection.preset === 'yearly') {
+    return {
+      periodSpendLabel: `Spent in ${selection.yearValue}`,
+      priorAverageLabel: 'Avg of prior 4 years',
+      comparisonContext: `in ${selection.yearValue} compared to the last 4 years`,
+    };
+  }
+  return {
+    periodSpendLabel: `Spent (${formatPeriodDisplayLabel(selection, range)})`,
+    priorAverageLabel: 'Avg of prior 4 periods',
+    comparisonContext: `in this period compared to the last 4 similar periods`,
+  };
+}
+
+/** Selected period spend vs average of the prior 4 comparable periods. */
+export function buildSpendVsPriorPeriod(
+  transactions: Transaction[],
+  selection: PeriodSelection,
+  selectedLabels?: Set<string> | null,
+  now = new Date(),
+): SpendVsPriorPeriodResult {
+  const focusRange = resolvePeriodRange(selection, now);
+  const periodSpend = sumSpentInRange(transactions, focusRange, selectedLabels);
+  const labels = spendInsightLabels(selection, focusRange);
+
+  let priorTotal = 0;
+  for (let i = 1; i <= 4; i += 1) {
+    const priorSelection = shiftPeriodSelection(selection, i);
+    const priorRange = resolvePeriodRange(priorSelection, now);
+    priorTotal += sumSpentInRange(transactions, priorRange, selectedLabels);
+  }
+  const priorAverage = priorTotal / 4;
+
+  let percent: number | null = null;
+  if (priorAverage > 0) {
+    percent = Math.round((periodSpend / priorAverage) * 100);
+  } else if (periodSpend > 0) {
+    percent = null;
+  } else {
+    percent = 0;
+  }
+
+  return {
+    periodSpend,
+    priorAverage,
+    percent,
+    ...labels,
+  };
+}
+
+export interface SpendVsPriorMonthsResult {
+  thisMonth: number;
+  priorAverage: number;
+  percent: number | null;
+}
+
+/** @deprecated Use buildSpendVsPriorPeriod */
+export function buildSpendVsPriorMonths(
+  transactions: Transaction[],
+  selectedLabels?: Set<string> | null,
+  now = new Date(),
+): SpendVsPriorMonthsResult {
+  const selection = createDefaultPeriodSelection(now);
+  const result = buildSpendVsPriorPeriod(transactions, selection, selectedLabels, now);
+  return {
+    thisMonth: result.periodSpend,
+    priorAverage: result.priorAverage,
+    percent: result.percent,
+  };
+}
+
+export function countCategoriesOverBudget(
+  categories: Array<{ label: string; monthlyBudget: number | null }>,
+  transactions: Transaction[],
+  selectedLabels?: Set<string> | null,
+  selection: PeriodSelection = createDefaultPeriodSelection(),
+  now = new Date(),
+): number {
+  const focusRange = resolvePeriodRange(selection, now);
+  let count = 0;
+  for (const category of categories) {
+    if (category.monthlyBudget === null || category.monthlyBudget === undefined) continue;
+    if (!includesCategoryLabel(selectedLabels, category.label)) continue;
+    const spent = sumSpentInRange(
+      transactions.filter((t) => t.categoryLabel === category.label),
+      focusRange,
+    );
+    if (spent > category.monthlyBudget) count += 1;
+  }
+  return count;
+}
