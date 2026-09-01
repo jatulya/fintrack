@@ -10,11 +10,15 @@ import {
   type PeriodPreset,
   type PeriodSelection,
 } from './periodUtils';
+import { CategoryFilterDropdown } from './CategoryFilterDropdown';
 
 interface PeriodSelectorProps {
   selection: PeriodSelection;
   displayLabel: string;
   onSelectionChange: (next: PeriodSelection) => void;
+  categoryOptions: string[];
+  selectedLabels: Set<string>;
+  setSelectedLabels: (next: Set<string>) => void;
 }
 
 const PRESET_OPTIONS: { value: PeriodPreset; label: string }[] = [
@@ -28,6 +32,9 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   selection,
   displayLabel,
   onSelectionChange,
+  categoryOptions,
+  selectedLabels,
+  setSelectedLabels,
 }) => {
   const { preset } = selection;
   const nextWeekDisabled = !canGoToNextWeek(selection.weekOffset);
@@ -58,6 +65,14 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
           ))}
         </select>
         <ChevronDown size={16} className="analytics-period-chevron" aria-hidden="true" />
+      </div>
+
+      <div className="analytics-period-select-wrap">
+        <CategoryFilterDropdown
+          options={categoryOptions}
+          selected={selectedLabels}
+          onChange={setSelectedLabels}
+        />
       </div>
 
       <div className="analytics-period-right">

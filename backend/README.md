@@ -7,6 +7,7 @@ JWT authentication powered by **Supabase Auth**, following **repository → serv
 1. **Create a Supabase project** at [supabase.com](https://supabase.com)
 
 2. **Run the migrations** — Supabase Dashboard → SQL Editor → run in order:
+   - `sql/add_categories_monthly_budget.sql` (adds nullable `monthly_budget` on `categories`)
 
 3. **Configure environment**
 

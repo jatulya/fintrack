@@ -1106,6 +1106,205 @@
   }
 }
 
+
+  /* ── Theme budget cards ── */
+
+  .category-budget-card {
+    @apply relative flex flex-col items-center text-center gap-3 min-h-[20rem];
+  }
+
+  .category-budget-edit {
+    @apply absolute top-4 right-4 p-2 rounded-xl border-none cursor-pointer;
+    background: color-mix(in srgb, var(--accent) 12%, white);
+    color: var(--accent);
+  }
+
+  .category-budget-edit:hover {
+    background: color-mix(in srgb, var(--accent) 22%, white);
+  }
+
+  .category-budget-ring-link {
+    @apply no-underline block;
+  }
+
+  .category-budget-ring {
+    @apply relative flex items-center justify-center;
+  }
+
+  .category-budget-ring svg {
+    @apply block;
+  }
+
+  .category-budget-ring-label {
+    @apply absolute inset-0 flex flex-col items-center justify-center pointer-events-none;
+  }
+
+  .category-budget-percent {
+    @apply text-2xl font-bold leading-none;
+    color: var(--text-primary);
+  }
+
+  .category-budget-spent-label {
+    @apply text-[0.65rem] font-semibold tracking-widest mt-1 uppercase;
+    color: var(--text-muted);
+  }
+
+  .category-budget-set-cta {
+    @apply flex items-center gap-2 px-4 py-3 rounded-2xl border-none cursor-pointer font-semibold text-sm;
+    background: color-mix(in srgb, var(--accent) 12%, white);
+    color: var(--accent);
+  }
+
+  .category-budget-set-dot {
+    @apply w-2.5 h-2.5 rounded-full;
+  }
+
+  .category-budget-title {
+    @apply text-xl font-bold m-0 mt-1;
+    color: var(--text-primary);
+  }
+
+  .category-budget-name {
+    @apply text-sm m-0;
+    color: var(--text-muted);
+  }
+
+  .category-budget-usage {
+    @apply text-sm m-0;
+    color: var(--text-secondary);
+  }
+
+  .category-budget-remaining-box {
+    @apply w-full mt-auto rounded-2xl px-4 py-3 flex flex-col items-center gap-1;
+    background: color-mix(in srgb, var(--text-primary) 6%, white);
+  }
+
+  .category-budget-remaining-amount {
+    @apply text-2xl font-bold leading-none;
+  }
+
+  .categories-toolbar {
+    @apply flex justify-end mb-6;
+  }
+
+  .categories-month-field {
+    @apply flex items-center gap-3;
+  }
+
+  .categories-month-label {
+    @apply text-sm font-medium;
+    color: var(--text-secondary);
+  }
+
+  .categories-month-input {
+    @apply rounded-xl border-none px-3 py-2 text-sm;
+    background: var(--clay-bg);
+    box-shadow: var(--clay-card-inset);
+    color: var(--text-primary);
+  }
+
+  .spend-insight-stats {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  .spend-insight-stat {
+    @apply rounded-2xl px-4 py-3 flex flex-col gap-1;
+    background: color-mix(in srgb, var(--accent) 10%, white);
+  }
+
+  .spend-insight-stat-label {
+    @apply text-xs font-medium uppercase tracking-wide;
+    color: var(--text-muted);
+  }
+
+  .spend-insight-stat-value {
+    @apply text-xl font-bold;
+    color: var(--accent);
+  }
+
+  .spend-insight-actions {
+    @apply flex flex-wrap gap-3 mt-auto;
+  }
+
+  .spend-insight-cta-secondary {
+    background: color-mix(in srgb, var(--text-primary) 8%, white);
+    color: var(--text-primary);
+  }
+
+  .spend-insight-cta-secondary:hover {
+    background: color-mix(in srgb, var(--text-primary) 12%, white);
+  }
+
+  .category-budget-remaining-label {
+    @apply text-[0.65rem] font-semibold tracking-widest;
+    color: var(--text-muted);
+  }
+
+  .category-new-tile {
+    @apply flex flex-col items-center justify-center gap-3 min-h-[20rem] rounded-3xl p-6 cursor-pointer border-2 border-dashed;
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--secondary) 18%, white);
+    color: var(--text-primary);
+  }
+
+  .category-new-tile:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--secondary) 30%, white);
+  }
+
+  .category-new-tile-icon {
+    @apply w-14 h-14 rounded-full flex items-center justify-center text-white;
+    background: var(--accent);
+  }
+
+  .category-new-tile-title {
+    @apply text-lg font-bold;
+  }
+
+  .category-new-tile-desc {
+    @apply text-sm;
+    color: var(--text-muted);
+  }
+
+  /* ── Spend insight card ── */
+
+  .spend-insight-card {
+    @apply flex flex-col gap-5;
+  }
+
+  .spend-insight-copy {
+    @apply text-base leading-relaxed m-0;
+    color: var(--text-secondary);
+  }
+
+  .spend-insight-copy strong {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  .spend-insight-limits {
+    @apply text-sm m-0;
+    color: var(--text-secondary);
+  }
+
+  .spend-insight-limits strong {
+    color: var(--text-primary);
+  }
+
+  .spend-insight-cta {
+    @apply inline-flex items-center gap-2 mt-auto self-start font-semibold text-sm no-underline px-4 py-2.5 rounded-xl;
+    background: color-mix(in srgb, var(--accent) 14%, white);
+    color: var(--accent);
+  }
+
+  .spend-insight-cta:hover {
+    background: color-mix(in srgb, var(--accent) 22%, white);
+  }
+
+  .analytics-category-filter-bar {
+    @apply flex justify-end mb-2;
+  }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
