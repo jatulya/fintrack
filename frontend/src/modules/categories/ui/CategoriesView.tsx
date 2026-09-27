@@ -1,53 +1,76 @@
-import React, { useState } from 'react';
-import { Plus, Tag } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { GlassCard } from '../../../common/components/GlassCard';
-import { colors } from '../../../common/themes/colors';
+import { strings } from '../../../common/texts/strings';
+import { maxMonthInputValue, toMonthInputValue } from '../../analytics/ui/periodUtils';
 import { useApp } from '../../../data/api/AppContext';
+import type { Category } from '../../../data/models/categories/types/categoryTypes';
 import { AddCategoryModal } from './AddCategoryModal';
+import { CategoryBudgetCard } from './CategoryBudgetCard';
+import { EditCategoryModal } from './EditCategoryModal';
+import { sumSpentByCategoryIdForMonth } from './categoryBudgetUtils';
 
 export const CategoriesView: React.FC = () => {
-  const { categories, isLoading } = useApp();
+  const { categories, transactions, isLoading } = useApp();
   const [showAddCategory, setShowAddCategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [monthValue, setMonthValue] = useState(() => toMonthInputValue(new Date()));
+
+  const spentByCategory = useMemo(
+    () => sumSpentByCategoryIdForMonth(transactions, monthValue),
+    [transactions, monthValue],
+  );
 
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-end items-center mb-8">
-        <button onClick={() => setShowAddCategory(true)} className="clay-btn">
-          <Plus size={20} /> Add Theme
-        </button>
+      <div className="categories-toolbar">
+        <label className="categories-month-field">
+          <span className="categories-month-label">{strings.periodMonth}</span>
+          <input
+            type="month"
+            className="categories-month-input"
+            value={monthValue}
+            max={maxMonthInputValue()}
+            onChange={(e) => setMonthValue(e.target.value)}
+            aria-label={strings.periodMonth}
+          />
+        </label>
       </div>
 
       {isLoading ? (
         <GlassCard className="p-12 text-center text-body-muted">Loading themes...</GlassCard>
-      ) : categories.length === 0 ? (
-        <GlassCard className="p-12 text-center text-body-muted">
-          No themes yet. Create one to start tagging your money diary.
-        </GlassCard>
       ) : (
         <div className="flex-grid">
           {categories.map((category) => (
-            <div key={category.id} className="clay-card">
-              <div className="flex items-start gap-4">
-                <div
-                  className="w-12 h-12 rounded-xl flex-center"
-                  style={{
-                    backgroundColor: (category.color ?? colors.accent) + '33',
-                    color: category.color ?? colors.accent,
-                  }}
-                >
-                  <Tag size={22} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold m-0 capitalize">{category.label}</h3>
-                  <p className="text-sm text-body-muted mt-1 mb-0">{category.name}</p>
-                </div>
-              </div>
-            </div>
+            <CategoryBudgetCard
+              key={category.id}
+              category={category}
+              spent={spentByCategory[category.id] ?? 0}
+              onEdit={() => setEditingCategory(category)}
+            />
           ))}
+
+          <button
+            type="button"
+            className="category-new-tile"
+            onClick={() => setShowAddCategory(true)}
+          >
+            <span className="category-new-tile-icon">
+              <Plus size={22} />
+            </span>
+            <span className="category-new-tile-title">New Category</span>
+            <span className="category-new-tile-desc">Expand your budget tracking</span>
+          </button>
         </div>
       )}
 
       {showAddCategory && <AddCategoryModal onClose={() => setShowAddCategory(false)} />}
+      {editingCategory && (
+        <EditCategoryModal
+          category={editingCategory}
+          onClose={() => setEditingCategory(null)}
+        />
+      )}
     </div>
   );
 };

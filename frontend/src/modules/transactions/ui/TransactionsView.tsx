@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   ArrowUpDown,
@@ -41,10 +42,47 @@ import {
   RECURRING_FREQUENCY_LABELS,
   type ProcessRecurringPaymentsResult,
 } from '../../../data/models/recurring/types/recurringTypes';
+import { parseMoneyDiaryFiltersFromSearch } from '../../analytics/ui/analyticsUrlUtils';
 
 type PaymentsTab = 'normal' | 'recurring';
 
+function resolveCategoryFilters(
+  filters: ReturnType<typeof parseMoneyDiaryFiltersFromSearch>,
+  categories: Array<{ id: string; label: string }>,
+): { categoryFilter: string; categoryIdsFilter?: string[] } {
+  if (filters.categoryId) {
+    return { categoryFilter: filters.categoryId, categoryIdsFilter: undefined };
+  }
+
+  if (filters.categoryIds?.length) {
+    return {
+      categoryFilter: filters.categoryIds.length === 1 ? filters.categoryIds[0] : 'All',
+      categoryIdsFilter: filters.categoryIds,
+    };
+  }
+
+  if (filters.categories?.length && categories.length > 0) {
+    const ids = filters.categories
+      .map((label) => categories.find((c) => c.label === label)?.id)
+      .filter((id): id is string => Boolean(id));
+    if (ids.length > 0) {
+      return {
+        categoryFilter: ids.length === 1 ? ids[0] : 'All',
+        categoryIdsFilter: ids,
+      };
+    }
+  }
+
+  return { categoryFilter: 'All', categoryIdsFilter: undefined };
+}
+
 export const TransactionsView: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const urlFilters = useMemo(
+    () => parseMoneyDiaryFiltersFromSearch(searchParams.toString()),
+    [searchParams],
+  );
+
   const {
     accounts,
     categories,
@@ -71,11 +109,68 @@ export const TransactionsView: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [directionFilter, setDirectionFilter] = useState<string>('All');
+  const [directionFilter, setDirectionFilter] = useState<string>(
+    () => urlFilters.direction ?? 'All',
+  );
   const [accountFilter, setAccountFilter] = useState<string>('All');
-  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [categoryFilter, setCategoryFilter] = useState<string>(() => {
+    if (urlFilters.categoryId) return urlFilters.categoryId;
+    if (urlFilters.categoryIds?.length === 1) return urlFilters.categoryIds[0];
+    return 'All';
+  });
+  const [categoryIdsFilter, setCategoryIdsFilter] = useState<string[] | undefined>(() => {
+    if (urlFilters.categoryIds?.length) return urlFilters.categoryIds;
+    if (urlFilters.categoryId) return [urlFilters.categoryId];
+    return undefined;
+  });
   const [sortBy, setSortBy] = useState<TransactionSortField>('spentAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [spentFromFilter, setSpentFromFilter] = useState<string | undefined>(
+    () => urlFilters.spentFrom,
+  );
+  const [spentToFilter, setSpentToFilter] = useState<string | undefined>(
+    () => urlFilters.spentTo,
+  );
+
+  useEffect(() => {
+    if (
+      !urlFilters.categoryId &&
+      !urlFilters.categoryIds?.length &&
+      !urlFilters.categories?.length &&
+      !urlFilters.direction &&
+      !urlFilters.spentFrom &&
+      !urlFilters.spentTo
+    ) {
+      return;
+    }
+
+    if (urlFilters.direction) {
+      setDirectionFilter(urlFilters.direction);
+    }
+    if (urlFilters.spentFrom) setSpentFromFilter(urlFilters.spentFrom);
+    if (urlFilters.spentTo) setSpentToFilter(urlFilters.spentTo);
+
+    const { categoryFilter: nextCategoryFilter, categoryIdsFilter: nextCategoryIds } =
+      resolveCategoryFilters(urlFilters, categories);
+    setCategoryFilter(nextCategoryFilter);
+    setCategoryIdsFilter(nextCategoryIds);
+  }, [urlFilters, categories]);
+
+  const labelResolvedCategoryIds = useMemo(() => {
+    if (categoryIdsFilter?.length) return undefined;
+    if (!urlFilters.categories?.length || categories.length === 0) return undefined;
+    const ids = urlFilters.categories
+      .map((label) => categories.find((c) => c.label === label)?.id)
+      .filter((id): id is string => Boolean(id));
+    return ids.length > 0 ? ids : undefined;
+  }, [categoryIdsFilter, urlFilters.categories, categories]);
+
+  const effectiveCategoryIds = categoryIdsFilter ?? labelResolvedCategoryIds;
+  const urlCategoryFiltersPending =
+    Boolean(urlFilters.categories?.length) &&
+    !urlFilters.categoryId &&
+    !urlFilters.categoryIds?.length &&
+    categories.length === 0;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -97,11 +192,25 @@ export const TransactionsView: React.FC = () => {
     limit: TRANSACTIONS_PAGE_SIZE,
     direction: directionFilter === 'All' ? undefined : directionFilter as 'received' | 'spent',
     accountId: accountFilter === 'All' ? undefined : accountFilter,
-    categoryId: categoryFilter === 'All' ? undefined : categoryFilter,
+    categoryId:
+      effectiveCategoryIds || categoryFilter === 'All' ? undefined : categoryFilter,
+    categoryIds: effectiveCategoryIds,
+    spentFrom: spentFromFilter,
+    spentTo: spentToFilter,
     search: debouncedSearch || undefined,
     sortBy,
     sortOrder,
-  }), [directionFilter, accountFilter, categoryFilter, debouncedSearch, sortBy, sortOrder]);
+  }), [
+    directionFilter,
+    accountFilter,
+    categoryFilter,
+    effectiveCategoryIds,
+    spentFromFilter,
+    spentToFilter,
+    debouncedSearch,
+    sortBy,
+    sortOrder,
+  ]);
 
   const fetchPage = useCallback(async (reset: boolean) => {
     if (isFetchingRef.current) return;
@@ -145,8 +254,9 @@ export const TransactionsView: React.FC = () => {
 
   useEffect(() => {
     if (activeTab !== 'normal') return;
+    if (urlCategoryFiltersPending) return;
     void fetchPage(true);
-  }, [fetchPage, transactionsRevision, activeTab]);
+  }, [fetchPage, transactionsRevision, activeTab, urlCategoryFiltersPending]);
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
@@ -379,7 +489,10 @@ export const TransactionsView: React.FC = () => {
 
               <SelectField
                 value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setCategoryIdsFilter(undefined);
+                }}
                 options={[
                   { value: 'All', label: strings.allCategories },
                   ...categories.map((c) => ({ value: c.id, label: c.label })),

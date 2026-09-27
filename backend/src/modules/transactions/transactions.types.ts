@@ -64,7 +64,10 @@ export interface ListTransactionsQuery {
   direction?: TransactionDirection;
   accountId?: string;
   categoryId?: string;
+  categoryIds?: string[];
   search?: string;
+  spentFrom?: string;
+  spentTo?: string;
   sortBy: TransactionSortField;
   sortOrder: 'asc' | 'desc';
 }
