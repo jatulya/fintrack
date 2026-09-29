@@ -36,16 +36,11 @@ This document explains the execution flow of the application, starting from the 
 
 These providers make shared data and functionality available to the components rendered inside them.
 
----
-
 ## 4. `AuthContext.tsx`
 
 `AuthContext.tsx` is responsible for managing and providing authentication-related information throughout the application.
 
-### Information provided by `AuthContext`
-
 The context can provide information such as:
-
 - The currently authenticated user's details
 - Authentication/loading state and functions
 - Access-token refresh status
@@ -72,7 +67,7 @@ isLoading: boolean;
   const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
 ```
 
-The purpose of storing the promise in a `ref` is to keep the same promise available across renders without causing the component to re-render when the value changes.
+The purpose of storing the promise in a `ref` is to keep the same promise available across renders.
 
 #### Why is same promise required?
 
