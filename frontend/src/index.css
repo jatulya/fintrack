@@ -1191,23 +1191,37 @@
     @apply flex items-center gap-4 flex-wrap;
   }
 
-  .category-limit-stack {
-    @apply flex flex-col gap-4 mb-6;
+  .category-limit-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: stretch;
   }
 
-  .category-limit-stack .category-limit-banner {
-    @apply mb-0;
+  .category-limit-pair:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    .category-limit-pair {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .category-limit-pair .category-limit-banner {
+    @apply mb-0 h-full;
   }
 
   .category-limit-banner {
     @apply mb-6 rounded-3xl px-5 py-4;
   }
 
-  .category-limit-banner-alert {
+  .category-limit-banner-reached {
     background: color-mix(in srgb, #c0394a 12%, white);
     border: 1px solid color-mix(in srgb, #c0394a 32%, white);
     color: #8d2433;
-    animation: category-limit-shade-warning 2.4s ease-in-out infinite;
+    animation: category-limit-shade-reached 2.6s ease-in-out infinite;
   }
 
   .category-limit-banner-caution {
@@ -1253,17 +1267,6 @@
     @apply shrink-0 font-medium;
   }
 
-  .category-limit-banner-combined {
-    background: var(--clay-bg);
-    border: 1px solid color-mix(in srgb, var(--secondary) 80%, white);
-    box-shadow: var(--clay-card-outer);
-    color: var(--text-primary);
-  }
-
-  .category-limit-banner-has-alert {
-    animation: category-limit-shade-warning 2.4s ease-in-out infinite;
-  }
-
   .category-limit-status-over {
     color: #8d2433;
   }
@@ -1276,23 +1279,22 @@
     color: var(--error);
   }
 
-  @keyframes category-limit-shade-warning {
+  @keyframes category-limit-shade-reached {
     0%,
     100% {
-      box-shadow: 0 6px 16px rgba(192, 57, 74, 0.08);
+      box-shadow: 0 4px 10px rgba(192, 57, 74, 0.1);
     }
     50% {
       box-shadow:
-        0 0 28px 10px rgba(192, 57, 74, 0.28),
-        0 14px 32px rgba(192, 57, 74, 0.2);
+        0 0 18px 6px rgba(192, 57, 74, 0.28),
+        0 10px 22px rgba(192, 57, 74, 0.16);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .category-limit-banner-alert,
-    .category-limit-banner-has-alert {
+    .category-limit-banner-reached {
       animation: none;
-      box-shadow: 0 8px 20px rgba(31, 3, 34, 0.08);
+      box-shadow: 0 6px 14px rgba(192, 57, 74, 0.12);
     }
   }
 

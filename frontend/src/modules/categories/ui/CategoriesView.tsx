@@ -12,7 +12,7 @@ import { CategoryLimitBanner } from './CategoryLimitBanner';
 import {
   matchesSpendPercentFilter,
   sumSpentByCategoryIdForMonth,
-  topBudgetSignals,
+  budgetSignalGroups,
   type SpendPercentFilter,
 } from './categoryBudgetUtils';
 
@@ -29,7 +29,7 @@ export const CategoriesView: React.FC = () => {
   );
 
   const budgetSignals = useMemo(
-    () => topBudgetSignals(categories, spentByCategory),
+    () => budgetSignalGroups(categories, spentByCategory),
     [categories, spentByCategory],
   );
 
@@ -84,7 +84,9 @@ export const CategoriesView: React.FC = () => {
         </div>
       </div>
 
-      {!isLoading && <CategoryLimitBanner items={budgetSignals} />}
+      {!isLoading && (
+        <CategoryLimitBanner reached={budgetSignals.reached} warnings={budgetSignals.warnings} />
+      )}
 
       {isLoading ? (
         <GlassCard className="p-12 text-center text-body-muted">Loading themes...</GlassCard>

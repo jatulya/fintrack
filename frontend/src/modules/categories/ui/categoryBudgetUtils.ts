@@ -65,11 +65,27 @@ function signalForSpend(spent: number, budget: number): BudgetSignalStatus | nul
   return null;
 }
 
-/** Highest-spend themes that are over budget, at 100%, or at 75% and above. */
-export function topBudgetSignals(
+export interface BudgetSignalGroups {
+  reached: BudgetSignal[];
+  warnings: BudgetSignal[];
+}
+
+/** Top budgets at or past 100%, and top 75%+ warnings, three each. */
+export function budgetSignalGroups(
   categories: Array<{ id: string; label: string; monthlyBudget: number | null }>,
   spentByCategory: Record<string, number>,
   limit = 3,
+): BudgetSignalGroups {
+  const signals = collectBudgetSignals(categories, spentByCategory);
+  return {
+    reached: signals.filter((signal) => signal.status !== 'warning').slice(0, limit),
+    warnings: signals.filter((signal) => signal.status === 'warning').slice(0, limit),
+  };
+}
+
+function collectBudgetSignals(
+  categories: Array<{ id: string; label: string; monthlyBudget: number | null }>,
+  spentByCategory: Record<string, number>,
 ): BudgetSignal[] {
   return categories
     .flatMap((category) => {
@@ -90,8 +106,7 @@ export function topBudgetSignals(
         },
       ];
     })
-    .sort((a, b) => b.percent - a.percent || b.overBy - a.overBy)
-    .slice(0, limit);
+    .sort((a, b) => b.percent - a.percent || b.overBy - a.overBy);
 }
 
 export function matchesSpendPercentFilter(
