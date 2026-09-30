@@ -8,40 +8,97 @@ import type { Category } from '../../../data/models/categories/types/categoryTyp
 import { AddCategoryModal } from './AddCategoryModal';
 import { CategoryBudgetCard } from './CategoryBudgetCard';
 import { EditCategoryModal } from './EditCategoryModal';
-import { sumSpentByCategoryIdForMonth } from './categoryBudgetUtils';
+import { CategoryLimitBanner } from './CategoryLimitBanner';
+import {
+  matchesSpendPercentFilter,
+  sumSpentByCategoryIdForMonth,
+  budgetSignalGroups,
+  type SpendPercentFilter,
+} from './categoryBudgetUtils';
 
 export const CategoriesView: React.FC = () => {
   const { categories, transactions, isLoading } = useApp();
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [monthValue, setMonthValue] = useState(() => toMonthInputValue(new Date()));
+  const [spendFilter, setSpendFilter] = useState<SpendPercentFilter>('all');
 
   const spentByCategory = useMemo(
     () => sumSpentByCategoryIdForMonth(transactions, monthValue),
     [transactions, monthValue],
   );
 
+  const budgetSignals = useMemo(
+    () => budgetSignalGroups(categories, spentByCategory),
+    [categories, spentByCategory],
+  );
+
+  const visibleCategories = useMemo(
+    () =>
+      categories.filter((category) =>
+        matchesSpendPercentFilter(
+          spentByCategory[category.id] ?? 0,
+          category.monthlyBudget,
+          spendFilter,
+        ),
+      ),
+    [categories, spentByCategory, spendFilter],
+  );
+
   return (
     <div className="animate-fade-in">
       <div className="categories-toolbar">
-        <label className="categories-month-field">
-          <span className="categories-month-label">{strings.periodMonth}</span>
-          <input
-            type="month"
-            className="categories-month-input"
-            value={monthValue}
-            max={maxMonthInputValue()}
-            onChange={(e) => setMonthValue(e.target.value)}
-            aria-label={strings.periodMonth}
-          />
-        </label>
+        <button type="button" className="clay-btn" onClick={() => setShowAddCategory(true)}>
+          <Plus size={20} />
+          {strings.addCategory}
+        </button>
+
+        <div className="categories-toolbar-filters">
+          <label className="categories-month-field">
+            <span className="categories-month-label">{strings.categoriesSpendFilterLabel}</span>
+            <select
+              className="categories-month-input"
+              value={spendFilter}
+              onChange={(e) => setSpendFilter(e.target.value as SpendPercentFilter)}
+              aria-label={strings.categoriesSpendFilterLabel}
+            >
+              <option value="all">{strings.categoriesSpendFilterAll}</option>
+              <option value="25">{strings.categoriesSpendFilter25}</option>
+              <option value="50">{strings.categoriesSpendFilter50}</option>
+              <option value="75">{strings.categoriesSpendFilter75}</option>
+              <option value="100">{strings.categoriesSpendFilter100}</option>
+            </select>
+          </label>
+
+          <label className="categories-month-field">
+            <span className="categories-month-label">{strings.periodMonth}</span>
+            <input
+              type="month"
+              className="categories-month-input"
+              value={monthValue}
+              max={maxMonthInputValue()}
+              onChange={(e) => setMonthValue(e.target.value)}
+              aria-label={strings.periodMonth}
+            />
+          </label>
+        </div>
       </div>
+
+      {!isLoading && (
+        <CategoryLimitBanner reached={budgetSignals.reached} warnings={budgetSignals.warnings} />
+      )}
 
       {isLoading ? (
         <GlassCard className="p-12 text-center text-body-muted">Loading themes...</GlassCard>
+      ) : categories.length === 0 ? (
+        <GlassCard className="p-12 text-center text-body-muted">{strings.categoriesEmpty}</GlassCard>
+      ) : visibleCategories.length === 0 ? (
+        <GlassCard className="p-12 text-center text-body-muted">
+          {strings.categoriesSpendFilterEmpty}
+        </GlassCard>
       ) : (
         <div className="flex-grid">
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <CategoryBudgetCard
               key={category.id}
               category={category}
@@ -49,18 +106,6 @@ export const CategoriesView: React.FC = () => {
               onEdit={() => setEditingCategory(category)}
             />
           ))}
-
-          <button
-            type="button"
-            className="category-new-tile"
-            onClick={() => setShowAddCategory(true)}
-          >
-            <span className="category-new-tile-icon">
-              <Plus size={22} />
-            </span>
-            <span className="category-new-tile-title">New Category</span>
-            <span className="category-new-tile-desc">Expand your budget tracking</span>
-          </button>
         </div>
       )}
 

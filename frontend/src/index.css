@@ -1184,7 +1184,118 @@
   }
 
   .categories-toolbar {
-    @apply flex justify-end mb-6;
+    @apply flex items-center justify-between gap-4 flex-wrap mb-6;
+  }
+
+  .categories-toolbar-filters {
+    @apply flex items-center gap-4 flex-wrap;
+  }
+
+  .category-limit-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: stretch;
+  }
+
+  .category-limit-pair:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    .category-limit-pair {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .category-limit-pair .category-limit-banner {
+    @apply mb-0 h-full;
+  }
+
+  .category-limit-banner {
+    @apply mb-6 rounded-3xl px-5 py-4;
+  }
+
+  .category-limit-banner-reached {
+    background: color-mix(in srgb, #c0394a 12%, white);
+    border: 1px solid color-mix(in srgb, #c0394a 32%, white);
+    color: #8d2433;
+    animation: category-limit-shade-reached 2.6s ease-in-out infinite;
+  }
+
+  .category-limit-banner-caution {
+    background: color-mix(in srgb, var(--secondary) 78%, white);
+    border: 1px solid color-mix(in srgb, var(--error) 22%, var(--secondary));
+    color: var(--error);
+    box-shadow: var(--clay-shadow);
+  }
+
+  .category-limit-banner-ok {
+    background: color-mix(in srgb, var(--accent) 12%, white);
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, white);
+    color: var(--accent);
+    box-shadow: var(--clay-card-outer);
+  }
+
+  .category-limit-banner-heading {
+    @apply flex items-center gap-2;
+  }
+
+  .category-limit-banner-title {
+    @apply text-base font-semibold m-0;
+  }
+
+  .category-limit-banner-detail {
+    @apply text-sm m-0 mt-1 pl-7;
+    color: color-mix(in srgb, currentColor 78%, var(--text-primary));
+  }
+
+  .category-limit-banner-list {
+    @apply list-none m-0 mt-3 p-0 flex flex-col gap-2;
+  }
+
+  .category-limit-banner-item {
+    @apply flex items-baseline justify-between gap-3 text-sm;
+  }
+
+  .category-limit-banner-label {
+    @apply font-semibold;
+  }
+
+  .category-limit-banner-amount {
+    @apply shrink-0 font-medium;
+  }
+
+  .category-limit-status-over {
+    color: #8d2433;
+  }
+
+  .category-limit-status-reached {
+    color: color-mix(in srgb, var(--accent) 45%, var(--error));
+  }
+
+  .category-limit-status-warning {
+    color: var(--error);
+  }
+
+  @keyframes category-limit-shade-reached {
+    0%,
+    100% {
+      box-shadow: 0 4px 10px rgba(192, 57, 74, 0.1);
+    }
+    50% {
+      box-shadow:
+        0 0 18px 6px rgba(192, 57, 74, 0.28),
+        0 10px 22px rgba(192, 57, 74, 0.16);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .category-limit-banner-reached {
+      animation: none;
+      box-shadow: 0 6px 14px rgba(192, 57, 74, 0.12);
+    }
   }
 
   .categories-month-field {

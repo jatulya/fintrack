@@ -34,3 +34,87 @@ export function budgetPercentSpent(spent: number, budget: number): number {
   if (budget <= 0) return 0;
   return Math.round((spent / budget) * 100);
 }
+
+export type BudgetSignalStatus = 'over' | 'reached' | 'warning';
+
+export interface BudgetSignal {
+  id: string;
+  label: string;
+  spent: number;
+  budget: number;
+  percent: number;
+  overBy: number;
+  status: BudgetSignalStatus;
+}
+
+const WARNING_PERCENT = 75;
+
+export type SpendPercentFilter = 'all' | '25' | '50' | '75' | '100';
+
+function spendPercent(spent: number, budget: number): number {
+  if (budget <= 0) return 0;
+  return (spent / budget) * 100;
+}
+
+function signalForSpend(spent: number, budget: number): BudgetSignalStatus | null {
+  if (budget <= 0 || spent <= 0) return null;
+  const percent = spendPercent(spent, budget);
+  if (spent > budget) return 'over';
+  if (Math.round(percent) >= 100) return 'reached';
+  if (percent >= WARNING_PERCENT) return 'warning';
+  return null;
+}
+
+export interface BudgetSignalGroups {
+  reached: BudgetSignal[];
+  warnings: BudgetSignal[];
+}
+
+/** Top budgets at or past 100%, and top 75%+ warnings, three each. */
+export function budgetSignalGroups(
+  categories: Array<{ id: string; label: string; monthlyBudget: number | null }>,
+  spentByCategory: Record<string, number>,
+  limit = 3,
+): BudgetSignalGroups {
+  const signals = collectBudgetSignals(categories, spentByCategory);
+  return {
+    reached: signals.filter((signal) => signal.status !== 'warning').slice(0, limit),
+    warnings: signals.filter((signal) => signal.status === 'warning').slice(0, limit),
+  };
+}
+
+function collectBudgetSignals(
+  categories: Array<{ id: string; label: string; monthlyBudget: number | null }>,
+  spentByCategory: Record<string, number>,
+): BudgetSignal[] {
+  return categories
+    .flatMap((category) => {
+      const budget = category.monthlyBudget;
+      const spent = spentByCategory[category.id] ?? 0;
+      if (budget == null || budget <= 0) return [];
+      const status = signalForSpend(spent, budget);
+      if (!status) return [];
+      return [
+        {
+          id: category.id,
+          label: category.label,
+          spent,
+          budget,
+          percent: Math.round(spendPercent(spent, budget)),
+          overBy: Math.max(0, spent - budget),
+          status,
+        },
+      ];
+    })
+    .sort((a, b) => b.percent - a.percent || b.overBy - a.overBy);
+}
+
+export function matchesSpendPercentFilter(
+  spent: number,
+  budget: number | null,
+  filter: SpendPercentFilter,
+): boolean {
+  if (filter === 'all') return true;
+  if (budget == null || budget <= 0) return false;
+  return spendPercent(spent, budget) >= Number(filter);
+}
